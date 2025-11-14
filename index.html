@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMA Outfit Analysis - Real-Time Market Scanner</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📈 SMA Outfit Analysis</h1>
+            <p class="subtitle">Real-Time Market Scanner & Wealth Distribution Analysis</p>
+        </header>
+
+        <div class="main-content">
+            <!-- API Selection Section -->
+            <section class="api-section">
+                <h2>API Configuration</h2>
+                <div class="api-selector">
+                    <label for="apiProvider">Select API Provider:</label>
+                    <select id="apiProvider">
+                        <option value="alphavantage">Alpha Vantage (Free)</option>
+                        <option value="finnhub">Finnhub (Free)</option>
+                        <option value="polygon">Polygon.io (Free Tier)</option>
+                        <option value="twelvedata">Twelve Data (Free)</option>
+                        <option value="yahoo">Yahoo Finance (Free - No Key)</option>
+                        <option value="custom">Custom API (Enter Your Key)</option>
+                    </select>
+                </div>
+                <div class="api-key-input" id="apiKeyContainer" style="display: none;">
+                    <label for="apiKey">API Key:</label>
+                    <input type="text" id="apiKey" placeholder="Enter your API key">
+                    <small>Your API key is stored locally in your browser</small>
+                </div>
+                <button id="saveApiConfig" class="btn btn-primary">Save Configuration</button>
+            </section>
+
+            <!-- Scanner Configuration -->
+            <section class="scanner-section">
+                <h2>Scanner Configuration</h2>
+                <div class="config-grid">
+                    <div class="config-item">
+                        <label for="tickerList">Stock Tickers (comma-separated):</label>
+                        <textarea id="tickerList" rows="4" placeholder="AAPL, MSFT, GOOGL, NVDA, TSLA, SPY, QQQ, DIA...">AAPL, MSFT, GOOGL, NVDA, TSLA, SPY, QQQ, DIA, AMZN, META</textarea>
+                        <small>Enter tickers separated by commas. Leave empty to use default list.</small>
+                    </div>
+                    <div class="config-item">
+                        <label>Timeframes:</label>
+                        <div class="checkbox-group" id="timeframeGroup">
+                            <label><input type="checkbox" value="1m" checked> 1 Minute</label>
+                            <label><input type="checkbox" value="5m" checked> 5 Minutes</label>
+                            <label><input type="checkbox" value="15m" checked> 15 Minutes</label>
+                            <label><input type="checkbox" value="30m" checked> 30 Minutes</label>
+                            <label><input type="checkbox" value="1h" checked> 1 Hour</label>
+                            <label><input type="checkbox" value="1d" checked> Daily</label>
+                        </div>
+                    </div>
+                    <div class="config-item">
+                        <label>Enable Notifications:</label>
+                        <label class="switch">
+                            <input type="checkbox" id="enableNotifications" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+                <div class="action-buttons">
+                    <button id="startScan" class="btn btn-success">Start Scanning</button>
+                    <button id="stopScan" class="btn btn-danger" disabled>Stop Scanning</button>
+                    <button id="clearResults" class="btn btn-secondary">Clear Results</button>
+                </div>
+            </section>
+
+            <!-- Active Programs Monitor -->
+            <section class="monitor-section">
+                <h2>Active Monitoring Programs</h2>
+                <div id="activePrograms" class="active-programs-list">
+                    <p class="empty-state">No active programs. Start scanning to begin monitoring.</p>
+                </div>
+            </section>
+
+            <!-- Results Section -->
+            <section class="results-section">
+                <h2>Scan Results</h2>
+                <div class="results-header">
+                    <div class="stats">
+                        <span id="totalScans">Total Scans: 0</span>
+                        <span id="activeSignals">Active Signals: 0</span>
+                        <span id="lastUpdate">Last Update: Never</span>
+                    </div>
+                    <div class="filter-controls">
+                        <input type="text" id="filterTicker" placeholder="Filter by ticker...">
+                        <select id="filterTimeframe">
+                            <option value="">All Timeframes</option>
+                            <option value="1m">1 Minute</option>
+                            <option value="5m">5 Minutes</option>
+                            <option value="15m">15 Minutes</option>
+                            <option value="30m">30 Minutes</option>
+                            <option value="1h">1 Hour</option>
+                            <option value="1d">Daily</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="resultsTable" class="results-table">
+                    <div class="table-header">
+                        <div class="col-ticker">Ticker</div>
+                        <div class="col-timeframe">Timeframe</div>
+                        <div class="col-outfit">SMA Outfit</div>
+                        <div class="col-signal">Signal</div>
+                        <div class="col-status">Status</div>
+                        <div class="col-time">Detected</div>
+                    </div>
+                    <div id="resultsBody" class="table-body">
+                        <p class="empty-state">No results yet. Start scanning to see SMA outfit signals.</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Notification Container -->
+        <div id="notificationContainer" class="notification-container"></div>
+    </div>
+
+    <script src="sma-outfits.js"></script>
+    <script src="api-handlers.js"></script>
+    <script src="scanner.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
