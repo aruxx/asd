@@ -1,281 +1,255 @@
-<!-- Improved compatibility of back to top link: See: https://github.com/othneildrew/Best-README-Template/pull/73 -->
-<a id="readme-top"></a>
-<!--
-*** Thanks for checking out the Best-README-Template. If you have a suggestion
-*** that would make this better, please fork the repo and create a pull request
-*** or simply open an issue with the tag "enhancement".
-*** Don't forget to give the project a star!
-*** Thanks again! Now go create something AMAZING! :D
--->
+# SMA Outfits - Real-Time Market Analysis
 
+A comprehensive web application for analyzing Simple Moving Average (SMA) outfits across multiple timeframes and equities in real-time. This tool provides transparency into market dynamics by detecting precision trading signals based on various SMA configurations.
 
+![SMA Outfits Analysis](images/screenshot.png)
 
-<!-- PROJECT SHIELDS -->
-<!--
-*** I'm using markdown "reference style" links for readability.
-*** Reference links are enclosed in brackets [ ] instead of parentheses ( ).
-*** See the bottom of this document for the declaration of the reference variables
-*** for contributors-url, forks-url, etc. This is an optional, concise syntax you may use.
-*** https://www.markdownguide.org/basic-syntax/#reference-style-links
--->
-[![Contributors][contributors-shield]][contributors-url]
-[![Forks][forks-shield]][forks-url]
-[![Stargazers][stars-shield]][stars-url]
-[![Issues][issues-shield]][issues-url]
-[![Unlicense License][license-shield]][license-url]
-[![LinkedIn][linkedin-shield]][linkedin-url]
+## 🚀 Live Demo
 
+**[View Live Application](https://yourusername.github.io/sma-outfits/)** ← Replace with your actual GitHub Pages URL
 
+## 📖 Overview
 
-<!-- PROJECT LOGO -->
-<br />
-<div align="center">
-  <a href="https://github.com/othneildrew/Best-README-Template">
-    <img src="images/logo.png" alt="Logo" width="80" height="80">
-  </a>
+This application implements the SMA outfit analysis methodology detailed in the research documentation. It monitors stock prices across multiple timeframes and detects signals based on specific SMA configurations that have been identified as significant in institutional trading operations.
 
-  <h3 align="center">Best-README-Template</h3>
+### Key Features
 
-  <p align="center">
-    An awesome README template to jumpstart your projects!
-    <br />
-    <a href="https://github.com/othneildrew/Best-README-Template"><strong>Explore the docs »</strong></a>
-    <br />
-    <br />
-    <a href="https://github.com/othneildrew/Best-README-Template">View Demo</a>
-    &middot;
-    <a href="https://github.com/othneildrew/Best-README-Template/issues/new?labels=bug&template=bug-report---.md">Report Bug</a>
-    &middot;
-    <a href="https://github.com/othneildrew/Best-README-Template/issues/new?labels=enhancement&template=feature-request---.md">Request Feature</a>
-  </p>
-</div>
+- **Multi-API Support**: Choose from 5 free market data APIs or use your own API key
+  - Alpha Vantage (Free - 500 requests/day)
+  - Finnhub (Free - 60 requests/minute)
+  - Twelve Data (Free - 800 requests/day)
+  - Polygon.io (Free tier available)
+  - Financial Modeling Prep (Free - 250 requests/day)
 
+- **Comprehensive SMA Outfits**: Pre-configured with all major SMA outfit patterns
+  - S&P 500 System (10/50/200)
+  - NASDAQ System (20/100/250)
+  - DJI System (30/60/90/300/600/900)
+  - Waring's Problem (19/37/73/143/279/548)
+  - Base 2 / NVDA (16/32/64/128/256/512)
+  - And many more...
 
+- **Multiple Timeframes**: Monitor from 1-minute to weekly charts
+  - Intraday: 1m, 5m, 15m, 30m, 1h
+  - Daily, Weekly, and longer periods
 
-<!-- TABLE OF CONTENTS -->
-<details>
-  <summary>Table of Contents</summary>
-  <ol>
-    <li>
-      <a href="#about-the-project">About The Project</a>
-      <ul>
-        <li><a href="#built-with">Built With</a></li>
-      </ul>
-    </li>
-    <li>
-      <a href="#getting-started">Getting Started</a>
-      <ul>
-        <li><a href="#prerequisites">Prerequisites</a></li>
-        <li><a href="#installation">Installation</a></li>
-      </ul>
-    </li>
-    <li><a href="#usage">Usage</a></li>
-    <li><a href="#roadmap">Roadmap</a></li>
-    <li><a href="#contributing">Contributing</a></li>
-    <li><a href="#license">License</a></li>
-    <li><a href="#contact">Contact</a></li>
-    <li><a href="#acknowledgments">Acknowledgments</a></li>
-  </ol>
-</details>
+- **Real-Time Monitoring**: Active scanning with live notifications
+  - Detects bullish and bearish crossovers
+  - Identifies precision buy/sell signals
+  - Tracks all active monitoring programs
 
+- **Advanced Filtering**: Filter results by signal type, stock, and timeframe
 
+## 🛠️ Technology Stack
 
-<!-- ABOUT THE PROJECT -->
-## About The Project
+- **Frontend**: Pure HTML5, CSS3, and JavaScript (ES6+)
+- **APIs**: Multiple free market data providers
+- **Deployment**: GitHub Pages (static hosting)
+- **No Backend Required**: Runs entirely in the browser
 
-[![Product Name Screen Shot][product-screenshot]](https://example.com)
+## 📦 Installation & Setup
 
-There are many great README templates available on GitHub; however, I didn't find one that really suited my needs so I created this enhanced one. I want to create a README template so amazing that it'll be the last one you ever need -- I think this is it.
+### Option 1: Use GitHub Pages (Recommended)
 
-Here's why:
-* Your time should be focused on creating something amazing. A project that solves a problem and helps others
-* You shouldn't be doing the same tasks over and over like creating a README from scratch
-* You should implement DRY principles to the rest of your life :smile:
+Simply visit the live application URL. No installation required!
 
-Of course, no one template will serve all projects since your needs may be different. So I'll be adding more in the near future. You may also suggest changes by forking this repo and creating a pull request or opening an issue. Thanks to all the people have contributed to expanding this template!
+### Option 2: Run Locally
 
-Use the `BLANK_README.md` to get started.
+1. Clone the repository:
+```bash
+git clone https://github.com/yourusername/sma-outfits.git
+cd sma-outfits
+```
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+2. Open `index.html` in your web browser:
+```bash
+# On macOS
+open index.html
 
+# On Linux
+xdg-open index.html
 
+# On Windows
+start index.html
+```
 
-### Built With
+Or use a local web server:
+```bash
+# Python 3
+python -m http.server 8000
 
-This section should list any major frameworks/libraries used to bootstrap your project. Leave any add-ons/plugins for the acknowledgements section. Here are a few examples.
+# Node.js
+npx serve
+```
 
-* [![Next][Next.js]][Next-url]
-* [![React][React.js]][React-url]
-* [![Vue][Vue.js]][Vue-url]
-* [![Angular][Angular.io]][Angular-url]
-* [![Svelte][Svelte.dev]][Svelte-url]
-* [![Laravel][Laravel.com]][Laravel-url]
-* [![Bootstrap][Bootstrap.com]][Bootstrap-url]
-* [![JQuery][JQuery.com]][JQuery-url]
+Then visit `http://localhost:8000` in your browser.
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+## 🔑 API Configuration
 
+### Free API Keys
 
+Most providers offer free tiers. Here's how to get started:
 
-<!-- GETTING STARTED -->
-## Getting Started
+1. **Alpha Vantage** (Recommended for beginners)
+   - Visit: https://www.alphavantage.co/support/#api-key
+   - Free tier: 500 requests/day, 5 requests/minute
+   - No credit card required
 
-This is an example of how you may give instructions on setting up your project locally.
-To get a local copy up and running follow these simple example steps.
+2. **Finnhub**
+   - Visit: https://finnhub.io/register
+   - Free tier: 60 requests/minute
+   - No credit card required
 
-### Prerequisites
+3. **Twelve Data**
+   - Visit: https://twelvedata.com/register
+   - Free tier: 800 requests/day
+   - No credit card required
 
-This is an example of how to list things you need to use the software and how to install them.
-* npm
-  ```sh
-  npm install npm@latest -g
-  ```
+4. **Polygon.io**
+   - Visit: https://polygon.io/dashboard/signup
+   - Free tier: 5 requests/minute
+   - Credit card required
 
-### Installation
+5. **Financial Modeling Prep**
+   - Visit: https://financialmodelingprep.com/developer/docs/
+   - Free tier: 250 requests/day
+   - No credit card required
 
-_Below is an example of how you can instruct your audience on installing and setting up your app. This template doesn't rely on any external dependencies or services._
+### Using the Application
 
-1. Get a free API Key at [https://example.com](https://example.com)
-2. Clone the repo
-   ```sh
-   git clone https://github.com/github_username/repo_name.git
+1. Select your preferred API provider from the dropdown
+2. Enter your API key (if required)
+3. Click "Save API Key"
+4. Configure your SMA outfits and timeframes
+5. Enter stock symbols to monitor
+6. Click "Start Scanner"
+
+## 📊 Understanding SMA Outfits
+
+### What are SMA Outfits?
+
+SMA (Simple Moving Average) outfits are specific configurations of multiple SMAs that institutional traders use to identify market conditions and execute precision trades. This application monitors these configurations in real-time to detect:
+
+- **Precision Buying Algorithms**: When price interacts with specific SMA levels
+- **Crossover Events**: When shorter SMAs cross above/below longer SMAs
+- **Support/Resistance**: When price tests key SMA levels
+
+### Pre-configured Outfits
+
+The application includes the following SMA outfit configurations:
+
+| Configuration | Description | Origin |
+|--------------|-------------|---------|
+| 10/50/200 | S&P 500 System | Standard market indicator |
+| 20/100/250 | NASDAQ System | Tech-focused configuration |
+| 30/60/90/300/600/900 | DJI System | Industrial average tracking |
+| 19/37/73/143/279/548 | Waring's Problem | Number theory based |
+| 16/32/64/128/256/512 | Base 2 | Binary progression |
+| 27/53/105/210/420/840 | TSLA Specific | Tesla tracking |
+| 23/46/91/183/365/730 | Time Based | Calendar day progression |
+
+## 🎯 Usage Examples
+
+### Example 1: Monitor SPY with S&P System
+
+1. Select API provider and enter key
+2. Check "S&P 500 (10/50/200)" outfit
+3. Select "15min", "30min", and "1hour" timeframes
+4. Enter "SPY" in the stock symbols field
+5. Click "Start Scanner"
+
+The app will monitor SPY across these timeframes and alert you when:
+- MA10 crosses MA50 (short-term trend change)
+- MA50 crosses MA200 (major trend change)
+- Price tests these moving averages
+
+### Example 2: Scan Multiple Tech Stocks
+
+1. Configure your API
+2. Select multiple SMA outfits
+3. Enter multiple stocks:
    ```
-3. Install NPM packages
-   ```sh
-   npm install
+   AAPL
+   MSFT
+   NVDA
+   TSLA
+   AMD
    ```
-4. Enter your API in `config.js`
-   ```js
-   const API_KEY = 'ENTER YOUR API';
-   ```
-5. Change git remote url to avoid accidental pushes to base project
-   ```sh
-   git remote set-url origin github_username/repo_name
-   git remote -v # confirm the changes
-   ```
+4. Select desired timeframes
+5. Start scanning
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+## 📈 Signal Interpretation
 
+### Buy Signals
+- Short-term SMA crosses above long-term SMA (Golden Cross)
+- Price bounces off SMA support level
+- Multiple SMAs aligning in bullish formation
 
+### Sell Signals
+- Short-term SMA crosses below long-term SMA (Death Cross)
+- Price rejected at SMA resistance level
+- Multiple SMAs aligning in bearish formation
 
-<!-- USAGE EXAMPLES -->
-## Usage
+### Crossover Events
+- Significant changes in trend direction
+- High-probability trading setups
+- Key institutional decision points
 
-Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
+## ⚠️ Important Notes
 
-_For more examples, please refer to the [Documentation](https://example.com)_
+### Rate Limits
+- Free API tiers have rate limits
+- The scanner automatically respects these limits
+- Scanning frequency: Every 60 seconds
+- Batch processing to maximize efficiency
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+### Data Accuracy
+- Real-time data depends on API provider
+- Free tiers may have 15-minute delays
+- Upgrade to paid tiers for real-time data
 
+### Disclaimer
+This tool is for **educational and research purposes only**. It is not financial advice. Always:
+- Do your own research
+- Understand the risks
+- Never invest more than you can afford to lose
+- Consult with a financial advisor
 
+## 🤝 Contributing
 
-<!-- ROADMAP -->
-## Roadmap
+Contributions are welcome! Please feel free to submit a Pull Request. For major changes:
 
-- [x] Add Changelog
-- [x] Add back to top links
-- [ ] Add Additional Templates w/ Examples
-- [ ] Add "components" document to easily copy & paste sections of the readme
-- [ ] Multi-language Support
-    - [ ] Chinese
-    - [ ] Spanish
-
-See the [open issues](https://github.com/othneildrew/Best-README-Template/issues) for a full list of proposed features (and known issues).
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
-
-<!-- CONTRIBUTING -->
-## Contributing
-
-Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
-
-If you have a suggestion that would make this better, please fork the repo and create a pull request. You can also simply open an issue with the tag "enhancement".
-Don't forget to give the project a star! Thanks again!
-
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
-### Top contributors:
+## 📝 License
 
-<a href="https://github.com/othneildrew/Best-README-Template/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=othneildrew/Best-README-Template" alt="contrib.rocks image" />
-</a>
+This project is licensed under the Unlicense License - see the [LICENSE.txt](LICENSE.txt) file for details.
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+## 🔗 Links
 
+- **Documentation**: See the original research documentation for detailed explanations
+- **Issues**: Report bugs or request features on GitHub
+- **Discussions**: Join the community discussion
 
+## 🙏 Acknowledgments
 
-<!-- LICENSE -->
-## License
+- Based on extensive research into SMA outfit analysis
+- Inspired by the need for transparency in equity markets
+- Built for the community, by the community
 
-Distributed under the Unlicense License. See `LICENSE.txt` for more information.
+## 📧 Contact
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+For questions, suggestions, or collaboration:
+- Open an issue on GitHub
+- Join the discussion forum
+- Follow updates on the project page
 
+---
 
+**Built with ❤️ for market transparency**
 
-<!-- CONTACT -->
-## Contact
-
-Your Name - [@your_twitter](https://twitter.com/your_username) - email@example.com
-
-Project Link: [https://github.com/your_username/repo_name](https://github.com/your_username/repo_name)
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
-
-<!-- ACKNOWLEDGMENTS -->
-## Acknowledgments
-
-Use this space to list resources you find helpful and would like to give credit to. I've included a few of my favorites to kick things off!
-
-* [Choose an Open Source License](https://choosealicense.com)
-* [GitHub Emoji Cheat Sheet](https://www.webpagefx.com/tools/emoji-cheat-sheet)
-* [Malven's Flexbox Cheatsheet](https://flexbox.malven.co/)
-* [Malven's Grid Cheatsheet](https://grid.malven.co/)
-* [Img Shields](https://shields.io)
-* [GitHub Pages](https://pages.github.com)
-* [Font Awesome](https://fontawesome.com)
-* [React Icons](https://react-icons.github.io/react-icons/search)
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
-
-<!-- MARKDOWN LINKS & IMAGES -->
-<!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
-[contributors-shield]: https://img.shields.io/github/contributors/othneildrew/Best-README-Template.svg?style=for-the-badge
-[contributors-url]: https://github.com/othneildrew/Best-README-Template/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/othneildrew/Best-README-Template.svg?style=for-the-badge
-[forks-url]: https://github.com/othneildrew/Best-README-Template/network/members
-[stars-shield]: https://img.shields.io/github/stars/othneildrew/Best-README-Template.svg?style=for-the-badge
-[stars-url]: https://github.com/othneildrew/Best-README-Template/stargazers
-[issues-shield]: https://img.shields.io/github/issues/othneildrew/Best-README-Template.svg?style=for-the-badge
-[issues-url]: https://github.com/othneildrew/Best-README-Template/issues
-[license-shield]: https://img.shields.io/github/license/othneildrew/Best-README-Template.svg?style=for-the-badge
-[license-url]: https://github.com/othneildrew/Best-README-Template/blob/master/LICENSE.txt
-[linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
-[linkedin-url]: https://linkedin.com/in/othneildrew
-[product-screenshot]: images/screenshot.png
-[Next.js]: https://img.shields.io/badge/next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white
-[Next-url]: https://nextjs.org/
-[React.js]: https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB
-[React-url]: https://reactjs.org/
-[Vue.js]: https://img.shields.io/badge/Vue.js-35495E?style=for-the-badge&logo=vuedotjs&logoColor=4FC08D
-[Vue-url]: https://vuejs.org/
-[Angular.io]: https://img.shields.io/badge/Angular-DD0031?style=for-the-badge&logo=angular&logoColor=white
-[Angular-url]: https://angular.io/
-[Svelte.dev]: https://img.shields.io/badge/Svelte-4A4A55?style=for-the-badge&logo=svelte&logoColor=FF3E00
-[Svelte-url]: https://svelte.dev/
-[Laravel.com]: https://img.shields.io/badge/Laravel-FF2D20?style=for-the-badge&logo=laravel&logoColor=white
-[Laravel-url]: https://laravel.com
-[Bootstrap.com]: https://img.shields.io/badge/Bootstrap-563D7C?style=for-the-badge&logo=bootstrap&logoColor=white
-[Bootstrap-url]: https://getbootstrap.com
-[JQuery.com]: https://img.shields.io/badge/jQuery-0769AD?style=for-the-badge&logo=jquery&logoColor=white
-[JQuery-url]: https://jquery.com 
+*Last Updated: January 2025*
