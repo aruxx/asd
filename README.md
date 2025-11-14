@@ -50,11 +50,13 @@ If you prefer a `docs/` deployment workflow, move `index.html` and `assets/` int
 ## API Providers
 | Provider | Free Tier Notes | Supported Timeframes |
 | --- | --- | --- |
-| Financial Modeling Prep | Demo key included; generous intraday history | 1m, 5m, 15m, 30m, 1h, 4h, 1d |
-| Alpha Vantage | Demo key; 5 calls/minute; best for compact bursts | 1m, 5m, 15m, 30m, 1h, 1d |
-| Twelve Data | Sign up for a free key; global symbols; JSON-first | 1m, 5m, 15m, 30m, 1h, 4h, 1d |
-| Polygon.io | Requires personal key; superior aggregated data | 1m, 5m, 15m, 30m, 1h, 4h, 1d |
-| Stooq CSV | No key; end-of-day focus; excellent fallback | 1d |
+| Yahoo Finance | No key required; client aggregates hourly data into 4h blocks | 1m, 5m, 15m, 30m, 1h, 4h*, 1d |
+| Financial Modeling Prep | Personal key required; intraday + daily history | 1m, 5m, 15m, 30m, 1h, 4h, 1d |
+| Alpha Vantage | Personal key required; 5 calls/min | 1m, 5m, 15m, 30m, 1h, 1d |
+| Twelve Data | Personal key required; global coverage | 1m, 5m, 15m, 30m, 1h, 4h, 1d |
+| Polygon.io | Personal key required; high-fidelity aggregates | 1m, 5m, 15m, 30m, 1h, 4h, 1d |
+
+\\*The 4h option is computed from hourly candles when using Yahoo Finance so you can run keyless scans without losing that timeframe.
 
 The UI stores API keys locally (optional) and exposes provider docs, notes, and rate-limit reminders so you can stay within free-tier budgets.
 

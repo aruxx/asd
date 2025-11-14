@@ -38,8 +38,14 @@ const polygonIntervalMap = {
   '1d': { multiplier: 1, span: 'day', lookbackDays: 365 }
 };
 
-const stooqIntervalMap = {
-  '1d': 'd'
+const yahooIntervalMap = {
+  '1m': { interval: '1m', range: '5d' },
+  '5m': { interval: '5m', range: '1mo' },
+  '15m': { interval: '15m', range: '1mo' },
+  '30m': { interval: '30m', range: '6mo' },
+  '1h': { interval: '1h', range: '1y' },
+  '4h': { interval: '1h', range: '2y', group: 4 },
+  '1d': { interval: '1d', range: '10y' }
 };
 
 async function safeFetch(url) {
@@ -70,14 +76,54 @@ function normalizeQuoteRows(rows, dateField = 'date', closeField = 'close') {
     .filter((row) => row.timestamp && Number.isFinite(row.close));
 }
 
+function aggregateRows(rows, group = 1) {
+  if (!group || group <= 1) return rows;
+  const aggregated = [];
+  for (let i = 0; i < rows.length; i += group) {
+    const slice = rows.slice(i, i + group);
+    const last = slice[slice.length - 1];
+    if (last) aggregated.push(last);
+  }
+  return aggregated;
+}
+
 export const API_PROVIDERS = [
+  {
+    id: 'yahoo',
+    name: 'Yahoo Finance',
+    description: 'No-key chart endpoint with generous historical depth.',
+    docsUrl: 'https://query1.finance.yahoo.com',
+    requiresKey: false,
+    intervals: Object.keys(yahooIntervalMap),
+    notes: '4h data is derived from hourly bars client-side to preserve continuity.',
+    async fetchSeries({ ticker, timeframe }) {
+      const config = yahooIntervalMap[timeframe];
+      if (!config) {
+        throw new Error(`Yahoo Finance does not support the ${timeframe} timeframe.`);
+      }
+      const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?interval=${config.interval}&range=${config.range}&includePrePost=false`;
+      const payload = await safeFetch(url);
+      const result = payload?.chart?.result?.[0];
+      if (!result) {
+        throw new Error(payload?.chart?.error?.description || 'Yahoo Finance error');
+      }
+      const timestamps = result.timestamp ?? [];
+      const closes = result.indicators?.quote?.[0]?.close ?? [];
+      const rows = timestamps
+        .map((ts, idx) => ({
+          timestamp: new Date(ts * 1000).toISOString(),
+          close: Number(closes[idx])
+        }))
+        .filter((row) => row.timestamp && Number.isFinite(row.close));
+      return aggregateRows(toAscendingSeries(rows), config.group);
+    }
+  },
   {
     id: 'fmp',
     name: 'Financial Modeling Prep',
-    description: 'REST endpoint with generous free tier and demo key for quick tests.',
+    description: 'REST endpoint with generous free tier; bring your own key.',
     docsUrl: 'https://financialmodelingprep.com/developer/docs/',
     requiresKey: true,
-    defaultKey: 'demo',
     intervals: Object.keys(fmpIntervalMap),
     notes: 'Supports intraday and daily historical-chart endpoints.',
     async fetchSeries({ ticker, timeframe, apiKey }) {
@@ -85,7 +131,7 @@ export const API_PROVIDERS = [
       if (!interval) {
         throw new Error(`FMP does not support ${timeframe} data.`);
       }
-      const key = apiKey || this.defaultKey;
+      const key = apiKey;
       const baseUrl = interval === '1day'
         ? `https://financialmodelingprep.com/api/v3/historical-price-full/${encodeURIComponent(ticker)}?timeseries=500&apikey=${key}`
         : `https://financialmodelingprep.com/api/v3/historical-chart/${interval}/${encodeURIComponent(ticker)}?apikey=${key}`;
@@ -102,11 +148,10 @@ export const API_PROVIDERS = [
     description: 'Popular free API with rich technical indicators.',
     docsUrl: 'https://www.alphavantage.co/documentation/',
     requiresKey: true,
-    defaultKey: 'demo',
     intervals: [...Object.keys(alphaIntervalMap), '1d'],
     notes: '5 calls/minute free tier. Intraday intervals limited to 1–60 minutes.',
     async fetchSeries({ ticker, timeframe, apiKey }) {
-      const key = apiKey || this.defaultKey;
+      const key = apiKey;
       let url;
       let dataKey;
       if (timeframe === '1d') {
@@ -139,16 +184,15 @@ export const API_PROVIDERS = [
   {
     id: 'twelve',
     name: 'Twelve Data',
-    description: 'Global coverage with flexible intervals and generous demo tier.',
+    description: 'Global coverage with flexible intervals; requires personal key.',
     docsUrl: 'https://twelvedata.com/docs',
     requiresKey: true,
-    defaultKey: 'demo',
     intervals: Object.keys(twelveIntervalMap),
     notes: 'Supports JSON responses with ascending order via order=ASC.',
     async fetchSeries({ ticker, timeframe, apiKey }) {
       const interval = twelveIntervalMap[timeframe];
       if (!interval) throw new Error(`Twelve Data does not support ${timeframe}`);
-      const key = apiKey || this.defaultKey;
+      const key = apiKey;
       const url = `https://api.twelvedata.com/time_series?symbol=${encodeURIComponent(ticker)}&interval=${interval}&outputsize=5000&order=ASC&apikey=${key}`;
       const payload = await safeFetch(url);
       if (payload.status === 'error') {
@@ -171,7 +215,8 @@ export const API_PROVIDERS = [
     async fetchSeries({ ticker, timeframe, apiKey }) {
       const interval = polygonIntervalMap[timeframe];
       if (!interval) throw new Error(`Polygon.io does not support ${timeframe}`);
-      const key = apiKey || (() => { throw new Error('Polygon.io requires an API key.'); })();
+      const key = apiKey;
+      if (!key) throw new Error('Polygon.io requires an API key.');
       const now = new Date();
       const from = new Date(now.getTime() - interval.lookbackDays * 24 * 60 * 60 * 1000);
       const fromDate = from.toISOString().split('T')[0];
@@ -185,28 +230,6 @@ export const API_PROVIDERS = [
       return toAscendingSeries(
         rows.map((row) => ({ timestamp: new Date(row.t).toISOString(), close: Number(row.c) }))
       );
-    }
-  },
-  {
-    id: 'stooq',
-    name: 'Stooq CSV',
-    description: 'Public CSV feed without an API key requirement.',
-    docsUrl: 'https://stooq.com/db/h/',
-    requiresKey: false,
-    intervals: Object.keys(stooqIntervalMap),
-    notes: 'Supports end-of-day scans; append .us or .global suffix as needed.',
-    async fetchSeries({ ticker, timeframe }) {
-      const interval = stooqIntervalMap[timeframe];
-      if (!interval) throw new Error('Stooq only provides daily data in this integration.');
-      const normalizedTicker = `${ticker.toLowerCase()}`.includes('.') ? ticker.toLowerCase() : `${ticker.toLowerCase()}.us`;
-      const url = `https://stooq.com/q/l/?s=${encodeURIComponent(normalizedTicker)}&i=${interval}`;
-      const csv = await safeFetch(url);
-      const lines = csv.trim().split('\n');
-      const rows = lines.slice(1).map((line) => {
-        const [symbol, date, , , , , close] = line.split(',');
-        return { timestamp: date, close: Number(close) };
-      });
-      return toAscendingSeries(rows.filter((row) => Number.isFinite(row.close)));
     }
   }
 ];

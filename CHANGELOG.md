@@ -1,5 +1,14 @@
 # Changelog
 
+# Changelog
+
+## v2.0.1
+
+### Fixed
+- Rebuilt the market data layer with real, up-to-date integrations (Yahoo Finance, FMP, Alpha Vantage, Twelve Data, Polygon) and removed demo/mock defaults so scans hit live endpoints.
+- Added a keyless Yahoo Finance provider plus client-side 4h aggregation to guarantee an out-of-the-box experience on GitHub Pages.
+- Updated documentation to reflect the new provider lineup and clarify API key requirements.
+
 ## v2.0.0
 
 ### Added
