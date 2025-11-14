@@ -88,32 +88,44 @@ Then visit `http://localhost:8000` in your browser.
 
 ### Free API Keys
 
+**IMPORTANT: You MUST get your own API key to use this application. All API calls now use real market data.**
+
 Most providers offer free tiers. Here's how to get started:
 
 1. **Alpha Vantage** (Recommended for beginners)
    - Visit: https://www.alphavantage.co/support/#api-key
+   - ✅ No credit card required
    - Free tier: 500 requests/day, 5 requests/minute
-   - No credit card required
+   - Data: Intraday (1min-60min), Daily, Weekly
+   - Best for: General stock market analysis
 
 2. **Finnhub**
    - Visit: https://finnhub.io/register
+   - ✅ No credit card required
    - Free tier: 60 requests/minute
-   - No credit card required
+   - Data: Real-time and historical candles
+   - Best for: High-frequency scanning
 
 3. **Twelve Data**
    - Visit: https://twelvedata.com/register
-   - Free tier: 800 requests/day
-   - No credit card required
+   - ✅ No credit card required
+   - Free tier: 800 requests/day, 8 requests/minute
+   - Data: Multiple timeframes, comprehensive
+   - Best for: Balanced usage
 
 4. **Polygon.io**
    - Visit: https://polygon.io/dashboard/signup
+   - ⚠️ Credit card required (but free tier available)
    - Free tier: 5 requests/minute
-   - Credit card required
+   - Data: Professional-grade market data
+   - Best for: Professional analysis
 
 5. **Financial Modeling Prep**
    - Visit: https://financialmodelingprep.com/developer/docs/
+   - ✅ No credit card required
    - Free tier: 250 requests/day
-   - No credit card required
+   - Data: Historical and intraday
+   - Best for: Daily analysis
 
 ### Using the Application
 

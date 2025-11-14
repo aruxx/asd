@@ -19,37 +19,46 @@ class SMAAnalyzer {
                 baseUrl: 'https://www.alphavantage.co/query',
                 rateLimit: 5, // requests per minute
                 getApiKey: 'https://www.alphavantage.co/support/#api-key',
-                useFreeKey: 'demo' // Alpha Vantage provides a demo key
+                useFreeKey: null,
+                needsCORS: false
             },
             finnhub: {
                 name: 'Finnhub',
                 baseUrl: 'https://finnhub.io/api/v1',
                 rateLimit: 60,
                 getApiKey: 'https://finnhub.io/register',
-                useFreeKey: null
+                useFreeKey: null,
+                needsCORS: false
             },
             twelvedata: {
                 name: 'Twelve Data',
                 baseUrl: 'https://api.twelvedata.com',
                 rateLimit: 8,
                 getApiKey: 'https://twelvedata.com/register',
-                useFreeKey: null
+                useFreeKey: null,
+                needsCORS: false
             },
             polygon: {
                 name: 'Polygon.io',
                 baseUrl: 'https://api.polygon.io',
                 rateLimit: 5,
                 getApiKey: 'https://polygon.io/dashboard/signup',
-                useFreeKey: null
+                useFreeKey: null,
+                needsCORS: false
             },
             fmp: {
                 name: 'Financial Modeling Prep',
                 baseUrl: 'https://financialmodelingprep.com/api/v3',
                 rateLimit: 250,
                 getApiKey: 'https://financialmodelingprep.com/developer/docs/',
-                useFreeKey: 'demo'
+                useFreeKey: null,
+                needsCORS: false
             }
         };
+        
+        // Use CORS proxy if needed (can be toggled)
+        this.useCORSProxy = false;
+        this.corsProxy = 'https://corsproxy.io/?';
 
         // Default stocks from the documentation
         this.defaultStocks = [
@@ -113,16 +122,18 @@ class SMAAnalyzer {
 
     toggleAPIKeySection() {
         const keySection = document.getElementById('api-key-section');
-        const config = this.apiConfigs[this.apiProvider];
         
-        if (this.apiProvider === 'custom' || !config.useFreeKey) {
-            keySection.style.display = 'block';
+        // Always show API key section - all providers need a key
+        keySection.style.display = 'block';
+        
+        // Try to load saved key for this provider
+        const savedKey = localStorage.getItem(`apiKey_${this.apiProvider}`);
+        if (savedKey) {
+            document.getElementById('api-key').value = savedKey;
+            this.apiKey = savedKey;
         } else {
-            keySection.style.display = 'none';
-            // Use the free demo key if available
-            if (config.useFreeKey) {
-                this.apiKey = config.useFreeKey;
-            }
+            document.getElementById('api-key').value = '';
+            this.apiKey = '';
         }
     }
 
@@ -209,8 +220,8 @@ class SMAAnalyzer {
             return;
         }
 
-        if (!this.apiKey && !this.apiConfigs[this.apiProvider]?.useFreeKey) {
-            this.showNotification('error', 'No API Key', 'Please enter your API key first.');
+        if (!this.apiKey) {
+            this.showNotification('error', 'No API Key', 'Please enter your API key for ' + this.apiConfigs[this.apiProvider].name + ' first.');
             return;
         }
 
@@ -315,7 +326,7 @@ class SMAAnalyzer {
             const smaValues = this.calculateSMAs(data, scan.outfit);
             
             // Detect signals
-            const signals = this.detectSignals(smaValues, scan);
+            const signals = this.detectSignals(smaValues, scan, data);
             
             if (signals.length > 0) {
                 scan.signals += signals.length;
@@ -337,62 +348,366 @@ class SMAAnalyzer {
     }
 
     async fetchMarketData(symbol, timeframe) {
-        // Simulate fetching data - In production, this would call the actual API
-        // For demo purposes, we'll generate mock data with realistic patterns
-        
         try {
-            // Map timeframe to appropriate interval
-            const interval = this.mapTimeframeToInterval(timeframe);
+            const apiKey = this.apiKey;
             
-            // For the demo, generate mock OHLC data
-            const data = this.generateMockOHLC(symbol, 200); // Generate 200 periods
-            
-            return data;
-            
+            if (!apiKey) {
+                console.error('No API key available');
+                this.showNotification('error', 'API Key Required', 'Please configure your API key before scanning.');
+                return null;
+            }
+
+            // Route to appropriate API handler
+            switch (this.apiProvider) {
+                case 'alphavantage':
+                    return await this.fetchAlphaVantage(symbol, timeframe, apiKey);
+                case 'finnhub':
+                    return await this.fetchFinnhub(symbol, timeframe, apiKey);
+                case 'twelvedata':
+                    return await this.fetchTwelveData(symbol, timeframe, apiKey);
+                case 'polygon':
+                    return await this.fetchPolygon(symbol, timeframe, apiKey);
+                case 'fmp':
+                    return await this.fetchFMP(symbol, timeframe, apiKey);
+                default:
+                    console.error('Unknown API provider');
+                    return null;
+            }
         } catch (error) {
             console.error(`Error fetching data for ${symbol}:`, error);
             return null;
         }
     }
 
-    mapTimeframeToInterval(timeframe) {
+    // Alpha Vantage API
+    async fetchAlphaVantage(symbol, timeframe, apiKey) {
+        try {
+            let func, interval, outputsize = 'compact';
+            
+            // Map timeframe to Alpha Vantage parameters
+            if (timeframe === 'daily') {
+                func = 'TIME_SERIES_DAILY';
+                outputsize = 'full';
+            } else if (timeframe === 'weekly') {
+                func = 'TIME_SERIES_WEEKLY';
+            } else {
+                func = 'TIME_SERIES_INTRADAY';
+                interval = this.mapAVInterval(timeframe);
+                outputsize = 'full';
+            }
+
+            const baseUrl = 'https://www.alphavantage.co/query';
+            let url = `${baseUrl}?function=${func}&symbol=${symbol}&apikey=${apiKey}&outputsize=${outputsize}`;
+            
+            if (interval) {
+                url += `&interval=${interval}`;
+            }
+
+            const finalUrl = this.useCORSProxy ? this.corsProxy + encodeURIComponent(url) : url;
+            const response = await fetch(finalUrl);
+            const data = await response.json();
+
+            // Check for API errors
+            if (data['Error Message']) {
+                console.error('Alpha Vantage error:', data['Error Message']);
+                return null;
+            }
+            if (data['Note']) {
+                console.warn('Alpha Vantage rate limit:', data['Note']);
+                return null;
+            }
+
+            return this.parseAlphaVantageData(data, func);
+        } catch (error) {
+            console.error('Alpha Vantage fetch error:', error);
+            return null;
+        }
+    }
+
+    mapAVInterval(timeframe) {
         const mapping = {
             '1min': '1min',
             '5min': '5min',
             '15min': '15min',
             '30min': '30min',
-            '60min': '60min',
+            '60min': '60min'
+        };
+        return mapping[timeframe] || '5min';
+    }
+
+    parseAlphaVantageData(data, func) {
+        let timeSeries;
+        
+        if (func === 'TIME_SERIES_DAILY') {
+            timeSeries = data['Time Series (Daily)'];
+        } else if (func === 'TIME_SERIES_WEEKLY') {
+            timeSeries = data['Weekly Time Series'];
+        } else {
+            // Intraday data - find the time series key dynamically
+            const keys = Object.keys(data);
+            const timeSeriesKey = keys.find(k => k.includes('Time Series'));
+            timeSeries = data[timeSeriesKey];
+        }
+
+        if (!timeSeries) return null;
+
+        const result = [];
+        for (const [timestamp, values] of Object.entries(timeSeries)) {
+            result.push({
+                timestamp: new Date(timestamp),
+                open: parseFloat(values['1. open']),
+                high: parseFloat(values['2. high']),
+                low: parseFloat(values['3. low']),
+                close: parseFloat(values['4. close']),
+                volume: parseInt(values['5. volume'])
+            });
+        }
+
+        // Sort by timestamp (oldest first)
+        return result.sort((a, b) => a.timestamp - b.timestamp);
+    }
+
+    // Finnhub API
+    async fetchFinnhub(symbol, timeframe, apiKey) {
+        try {
+            const resolution = this.mapFinnhubResolution(timeframe);
+            const to = Math.floor(Date.now() / 1000);
+            const from = to - (this.getTimeframeSeconds(timeframe) * 1000); // Get last 1000 periods
+
+            const url = `https://finnhub.io/api/v1/stock/candle?symbol=${symbol}&resolution=${resolution}&from=${from}&to=${to}&token=${apiKey}`;
+
+            const finalUrl = this.useCORSProxy ? this.corsProxy + encodeURIComponent(url) : url;
+            const response = await fetch(finalUrl);
+            const data = await response.json();
+
+            if (data.s === 'no_data') {
+                console.warn(`Finnhub: No data for ${symbol}`);
+                return null;
+            }
+
+            return this.parseFinnhubData(data);
+        } catch (error) {
+            console.error('Finnhub fetch error:', error);
+            return null;
+        }
+    }
+
+    mapFinnhubResolution(timeframe) {
+        const mapping = {
+            '1min': '1',
+            '5min': '5',
+            '15min': '15',
+            '30min': '30',
+            '60min': '60',
+            'daily': 'D',
+            'weekly': 'W'
+        };
+        return mapping[timeframe] || '5';
+    }
+
+    getTimeframeSeconds(timeframe) {
+        const mapping = {
+            '1min': 60,
+            '5min': 300,
+            '15min': 900,
+            '30min': 1800,
+            '60min': 3600,
+            'daily': 86400,
+            'weekly': 604800
+        };
+        return mapping[timeframe] || 300;
+    }
+
+    parseFinnhubData(data) {
+        const result = [];
+        for (let i = 0; i < data.t.length; i++) {
+            result.push({
+                timestamp: new Date(data.t[i] * 1000),
+                open: data.o[i],
+                high: data.h[i],
+                low: data.l[i],
+                close: data.c[i],
+                volume: data.v[i]
+            });
+        }
+        return result;
+    }
+
+    // Twelve Data API
+    async fetchTwelveData(symbol, timeframe, apiKey) {
+        try {
+            const interval = this.mapTwelveDataInterval(timeframe);
+            const outputsize = 1000;
+
+            const url = `https://api.twelvedata.com/time_series?symbol=${symbol}&interval=${interval}&outputsize=${outputsize}&apikey=${apiKey}`;
+
+            const finalUrl = this.useCORSProxy ? this.corsProxy + encodeURIComponent(url) : url;
+            const response = await fetch(finalUrl);
+            const data = await response.json();
+
+            if (data.status === 'error') {
+                console.error('Twelve Data error:', data.message);
+                return null;
+            }
+
+            return this.parseTwelveDataData(data);
+        } catch (error) {
+            console.error('Twelve Data fetch error:', error);
+            return null;
+        }
+    }
+
+    mapTwelveDataInterval(timeframe) {
+        const mapping = {
+            '1min': '1min',
+            '5min': '5min',
+            '15min': '15min',
+            '30min': '30min',
+            '60min': '1h',
             'daily': '1day',
             'weekly': '1week'
         };
         return mapping[timeframe] || '5min';
     }
 
-    generateMockOHLC(symbol, periods) {
-        const data = [];
-        let price = 100 + Math.random() * 400; // Starting price between 100-500
-        
-        for (let i = 0; i < periods; i++) {
-            const change = (Math.random() - 0.48) * 5; // Slight upward bias
-            const open = price;
-            const close = price + change;
-            const high = Math.max(open, close) + Math.random() * 2;
-            const low = Math.min(open, close) - Math.random() * 2;
-            const volume = Math.floor(1000000 + Math.random() * 5000000);
-            
-            data.push({
-                timestamp: new Date(Date.now() - (periods - i) * 300000), // 5 min intervals
-                open,
-                high,
-                low,
-                close,
-                volume
+    parseTwelveDataData(data) {
+        if (!data.values) return null;
+
+        const result = [];
+        for (const bar of data.values) {
+            result.push({
+                timestamp: new Date(bar.datetime),
+                open: parseFloat(bar.open),
+                high: parseFloat(bar.high),
+                low: parseFloat(bar.low),
+                close: parseFloat(bar.close),
+                volume: parseInt(bar.volume)
             });
-            
-            price = close;
         }
-        
-        return data;
+
+        // Sort by timestamp (oldest first)
+        return result.sort((a, b) => a.timestamp - b.timestamp);
+    }
+
+    // Polygon.io API
+    async fetchPolygon(symbol, timeframe, apiKey) {
+        try {
+            const { multiplier, timespan } = this.mapPolygonTimeframe(timeframe);
+            const to = new Date().toISOString().split('T')[0];
+            const from = new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+
+            const url = `https://api.polygon.io/v2/aggs/ticker/${symbol}/range/${multiplier}/${timespan}/${from}/${to}?adjusted=true&sort=asc&limit=50000&apiKey=${apiKey}`;
+
+            const finalUrl = this.useCORSProxy ? this.corsProxy + encodeURIComponent(url) : url;
+            const response = await fetch(finalUrl);
+            const data = await response.json();
+
+            if (data.status !== 'OK' || !data.results) {
+                console.warn(`Polygon: No data for ${symbol}`);
+                return null;
+            }
+
+            return this.parsePolygonData(data);
+        } catch (error) {
+            console.error('Polygon fetch error:', error);
+            return null;
+        }
+    }
+
+    mapPolygonTimeframe(timeframe) {
+        const mapping = {
+            '1min': { multiplier: 1, timespan: 'minute' },
+            '5min': { multiplier: 5, timespan: 'minute' },
+            '15min': { multiplier: 15, timespan: 'minute' },
+            '30min': { multiplier: 30, timespan: 'minute' },
+            '60min': { multiplier: 1, timespan: 'hour' },
+            'daily': { multiplier: 1, timespan: 'day' },
+            'weekly': { multiplier: 1, timespan: 'week' }
+        };
+        return mapping[timeframe] || { multiplier: 5, timespan: 'minute' };
+    }
+
+    parsePolygonData(data) {
+        const result = [];
+        for (const bar of data.results) {
+            result.push({
+                timestamp: new Date(bar.t),
+                open: bar.o,
+                high: bar.h,
+                low: bar.l,
+                close: bar.c,
+                volume: bar.v
+            });
+        }
+        return result;
+    }
+
+    // Financial Modeling Prep API
+    async fetchFMP(symbol, timeframe, apiKey) {
+        try {
+            let url;
+
+            if (timeframe === 'daily') {
+                url = `https://financialmodelingprep.com/api/v3/historical-price-full/${symbol}?apikey=${apiKey}`;
+            } else if (timeframe === 'weekly') {
+                // FMP doesn't have direct weekly, use daily and aggregate
+                url = `https://financialmodelingprep.com/api/v3/historical-price-full/${symbol}?apikey=${apiKey}`;
+            } else {
+                // Intraday data
+                const interval = this.mapFMPInterval(timeframe);
+                url = `https://financialmodelingprep.com/api/v3/historical-chart/${interval}/${symbol}?apikey=${apiKey}`;
+            }
+
+            const finalUrl = this.useCORSProxy ? this.corsProxy + encodeURIComponent(url) : url;
+            const response = await fetch(finalUrl);
+            const data = await response.json();
+
+            if (data['Error Message'] || (Array.isArray(data) && data.length === 0)) {
+                console.warn(`FMP: No data for ${symbol}`);
+                return null;
+            }
+
+            return this.parseFMPData(data, timeframe);
+        } catch (error) {
+            console.error('FMP fetch error:', error);
+            return null;
+        }
+    }
+
+    mapFMPInterval(timeframe) {
+        const mapping = {
+            '1min': '1min',
+            '5min': '5min',
+            '15min': '15min',
+            '30min': '30min',
+            '60min': '1hour'
+        };
+        return mapping[timeframe] || '5min';
+    }
+
+    parseFMPData(data, timeframe) {
+        const result = [];
+        let dataArray;
+
+        if (timeframe === 'daily' || timeframe === 'weekly') {
+            dataArray = data.historical || [];
+        } else {
+            dataArray = Array.isArray(data) ? data : [];
+        }
+
+        for (const bar of dataArray) {
+            result.push({
+                timestamp: new Date(bar.date),
+                open: parseFloat(bar.open),
+                high: parseFloat(bar.high),
+                low: parseFloat(bar.low),
+                close: parseFloat(bar.close),
+                volume: parseInt(bar.volume || 0)
+            });
+        }
+
+        // Sort by timestamp (oldest first)
+        return result.sort((a, b) => a.timestamp - b.timestamp);
     }
 
     calculateSMAs(data, periods) {
@@ -413,61 +728,131 @@ class SMAAnalyzer {
         return sum / period;
     }
 
-    detectSignals(smaValues, scan) {
+    detectSignals(smaValues, scan, data) {
         const signals = [];
         const outfit = scan.outfit;
         
+        if (!data || data.length < 2) return signals;
+        
+        const currentPrice = data[data.length - 1].close;
+        const previousPrice = data[data.length - 2].close;
+        
         // Check for crossovers between different SMAs
         if (outfit.length >= 2) {
+            // Check short vs medium (if available)
+            if (outfit.length >= 2) {
+                const shortSMA = smaValues[outfit[0]];
+                const mediumSMA = smaValues[outfit[1]];
+                
+                if (shortSMA && mediumSMA) {
+                    // Golden Cross (bullish) - check if it just happened
+                    const crossoverThreshold = 0.001; // 0.1% threshold
+                    if (Math.abs(shortSMA - mediumSMA) / mediumSMA < crossoverThreshold) {
+                        if (shortSMA > mediumSMA) {
+                            signals.push({
+                                timestamp: new Date(),
+                                symbol: scan.symbol,
+                                type: 'crossover',
+                                outfit: outfit.join('/'),
+                                timeframe: scan.timeframe,
+                                price: currentPrice,
+                                details: `Golden Cross: SMA ${outfit[0]} crossed above SMA ${outfit[1]}`
+                            });
+                        } else {
+                            signals.push({
+                                timestamp: new Date(),
+                                symbol: scan.symbol,
+                                type: 'crossover',
+                                outfit: outfit.join('/'),
+                                timeframe: scan.timeframe,
+                                price: currentPrice,
+                                details: `Death Cross: SMA ${outfit[0]} crossed below SMA ${outfit[1]}`
+                            });
+                        }
+                    }
+                }
+            }
+            
+            // Check short vs long
             const shortSMA = smaValues[outfit[0]];
             const longSMA = smaValues[outfit[outfit.length - 1]];
             
             if (shortSMA && longSMA) {
-                // Golden Cross (bullish)
-                if (shortSMA > longSMA * 1.001) { // Small threshold to avoid noise
+                const divergence = (shortSMA - longSMA) / longSMA;
+                
+                // Strong bullish signal
+                if (divergence > 0.05) { // 5% above
                     signals.push({
                         timestamp: new Date(),
                         symbol: scan.symbol,
                         type: 'buy',
                         outfit: outfit.join('/'),
                         timeframe: scan.timeframe,
-                        price: shortSMA,
-                        details: `Short SMA (${outfit[0]}) crossed above Long SMA (${outfit[outfit.length - 1]})`
+                        price: currentPrice,
+                        details: `Strong bullish: SMA ${outfit[0]} is ${(divergence * 100).toFixed(2)}% above SMA ${outfit[outfit.length - 1]}`
                     });
                 }
                 
-                // Death Cross (bearish)
-                if (shortSMA < longSMA * 0.999) {
+                // Strong bearish signal
+                if (divergence < -0.05) { // 5% below
                     signals.push({
                         timestamp: new Date(),
                         symbol: scan.symbol,
                         type: 'sell',
                         outfit: outfit.join('/'),
                         timeframe: scan.timeframe,
-                        price: shortSMA,
-                        details: `Short SMA (${outfit[0]}) crossed below Long SMA (${outfit[outfit.length - 1]})`
+                        price: currentPrice,
+                        details: `Strong bearish: SMA ${outfit[0]} is ${(Math.abs(divergence) * 100).toFixed(2)}% below SMA ${outfit[outfit.length - 1]}`
                     });
                 }
             }
         }
         
-        // Check for price relative to SMAs (support/resistance)
+        // Check price interaction with each SMA
         for (let i = 0; i < outfit.length; i++) {
             const sma = smaValues[outfit[i]];
-            if (sma) {
-                // Random chance to generate signals for demo purposes
-                if (Math.random() > 0.95) { // 5% chance per scan
-                    const signalType = Math.random() > 0.5 ? 'buy' : 'sell';
-                    signals.push({
-                        timestamp: new Date(),
-                        symbol: scan.symbol,
-                        type: signalType,
-                        outfit: outfit.join('/'),
-                        timeframe: scan.timeframe,
-                        price: sma,
-                        details: `Price interaction with SMA ${outfit[i]}`
-                    });
-                }
+            if (!sma) continue;
+            
+            const priceToSMA = (currentPrice - sma) / sma;
+            const prevPriceToSMA = (previousPrice - sma) / sma;
+            
+            // Price just crossed above SMA (support bounce)
+            if (prevPriceToSMA < 0 && priceToSMA > 0) {
+                signals.push({
+                    timestamp: new Date(),
+                    symbol: scan.symbol,
+                    type: 'buy',
+                    outfit: outfit.join('/'),
+                    timeframe: scan.timeframe,
+                    price: currentPrice,
+                    details: `Price bounced off SMA ${outfit[i]} support at $${sma.toFixed(2)}`
+                });
+            }
+            
+            // Price just crossed below SMA (resistance rejection)
+            if (prevPriceToSMA > 0 && priceToSMA < 0) {
+                signals.push({
+                    timestamp: new Date(),
+                    symbol: scan.symbol,
+                    type: 'sell',
+                    outfit: outfit.join('/'),
+                    timeframe: scan.timeframe,
+                    price: currentPrice,
+                    details: `Price rejected at SMA ${outfit[i]} resistance at $${sma.toFixed(2)}`
+                });
+            }
+            
+            // Price very close to SMA (within 0.5%)
+            if (Math.abs(priceToSMA) < 0.005) {
+                signals.push({
+                    timestamp: new Date(),
+                    symbol: scan.symbol,
+                    type: 'crossover',
+                    outfit: outfit.join('/'),
+                    timeframe: scan.timeframe,
+                    price: currentPrice,
+                    details: `Price testing SMA ${outfit[i]} level at $${sma.toFixed(2)}`
+                });
             }
         }
         
