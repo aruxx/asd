@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Real-time SMA outfit intelligence platform scanning every timeframe, ticker, and institution-grade configuration."
+    />
+    <link rel="icon" type="image/png" href="./images/logo.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./assets/css/styles.css" />
+    <title>SMA Outfit Transparency Lab</title>
+  </head>
+  <body>
+    <div id="notification-tray" aria-live="polite"></div>
+    <header class="hero">
+      <div class="hero__content">
+        <p class="eyebrow">Simple Moving Average Outfit Transparency</p>
+        <h1>Scan every equity, timeframe, and SMA outfit without leaving the browser.</h1>
+        <p>
+          This GitHub Pages–ready experience fuses research-grade documentation with a fully client-side analysis
+          engine. Select one of five free data APIs (or plug in your own key), launch multi-ticker scans, and monitor
+          how SMA outfits modulate global liquidity in real-time.
+        </p>
+        <div class="hero__cta">
+          <button form="scan-form" type="submit" class="primary">Launch Universal Scan</button>
+          <a class="ghost" href="#docs">Explore the Research Stack →</a>
+        </div>
+        <p id="status-banner" class="status-banner">Loading…</p>
+      </div>
+      <div class="hero__media">
+        <img src="./images/screenshot.png" alt="SMA dashboard preview" />
+        <div class="hero__badge">
+          <span>5 Providers</span>
+          <span>44,000+ Live Threads Indexed</span>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section id="scanner" class="panel layout-two">
+        <article class="card card--form">
+          <header>
+            <h2>Program Builder</h2>
+            <p>Create a named scan that touches every SMA outfit across every timeframe stack.</p>
+          </header>
+          <form id="scan-form">
+            <label class="field">
+              <span>Program name</span>
+              <input type="text" id="program-name" placeholder="Global Sweep – ${Ticker}" />
+            </label>
+
+            <div class="field-grid">
+              <label class="field">
+                <span>Data provider</span>
+                <select id="provider" required></select>
+              </label>
+              <label class="field">
+                <span>API key (optional)</span>
+                <input type="password" id="api-key" placeholder="demo / personal key" />
+              </label>
+            </div>
+
+            <label class="field">
+              <span>Tickers</span>
+              <textarea
+                id="tickers"
+                rows="3"
+                placeholder="SPY, QQQ, DIA, NVDA, TSLA, BTCUSD"
+              ></textarea>
+              <div class="field-actions">
+                <button type="button" id="load-default-tickers">Load institutional universe</button>
+              </div>
+            </label>
+
+            <div class="split">
+              <div class="field">
+                <div class="field-header">
+                  <span>Timeframes</span>
+                  <div class="field-actions">
+                    <button type="button" id="select-all-timeframes">Select all</button>
+                    <button type="button" id="deselect-timeframes">Clear</button>
+                  </div>
+                </div>
+                <div id="timeframe-options" class="chip-grid"></div>
+              </div>
+              <div class="field">
+                <div class="field-header">
+                  <span>SMA outfits</span>
+                  <div class="field-actions">
+                    <button type="button" id="select-all-outfits">Select all</button>
+                    <button type="button" id="deselect-outfits">Clear</button>
+                  </div>
+                </div>
+                <div id="outfit-options" class="chip-grid chip-grid--tall"></div>
+              </div>
+            </div>
+
+            <label class="field">
+              <span>Program notes</span>
+              <textarea id="program-notes" name="notes" rows="2" placeholder="Session notes, hypotheses, links"></textarea>
+            </label>
+
+            <div class="form-footer">
+              <button class="primary" type="submit">Start program</button>
+              <p class="muted">On start we’ll notify you and list the program below.</p>
+            </div>
+          </form>
+        </article>
+
+        <aside class="card card--meta">
+          <h3>Provider catalog</h3>
+          <p>
+            Choose between five free-tier APIs. Use embedded demo keys (Alpha Vantage + FMP) or bring your own token for
+            Polygon.io and Finnhub. Yahoo Finance is public and CORS-friendly.
+          </p>
+          <ul id="provider-catalog"></ul>
+          <h3>Repository map</h3>
+          <p>All research directories mentioned in the brief are available in this repo.</p>
+          <ul class="repo-map">
+            <li><a href="./SMA_Analysis" target="_blank">SMA_Analysis/</a></li>
+            <li><a href="./Technical_Explanation" target="_blank">Technical_Explanation/</a></li>
+            <li><a href="./Data_and_Analysis" target="_blank">Data_and_Analysis/</a></li>
+            <li><a href="./Visualizations" target="_blank">Visualizations/</a></li>
+            <li><a href="./Documentation" target="_blank">Documentation/</a></li>
+            <li><a href="./Real_Time_Operations" target="_blank">Real_Time_Operations/</a></li>
+            <li><a href="./Tools_and_Scripts" target="_blank">Tools_and_Scripts/</a></li>
+          </ul>
+        </aside>
+      </section>
+
+      <section id="programs" class="panel">
+        <header>
+          <h2>Active programs</h2>
+          <p>Every running or completed scan is listed with live logs for full transparency.</p>
+        </header>
+        <div id="program-list" class="program-grid"></div>
+      </section>
+
+      <section id="results" class="panel">
+        <header>
+          <h2>Live SMA signals</h2>
+          <p>We evaluate every outfit/timeframe pair and stream the latest state below.</p>
+        </header>
+        <div id="results-board" class="results-board"></div>
+      </section>
+
+      <section id="docs" class="panel">
+        <header>
+          <h2>Extended documentation</h2>
+          <p>Use these quick links to navigate the supporting research assets.</p>
+        </header>
+        <div class="doc-grid">
+          <a class="doc-card" href="./SMA_Analysis/Introduction.md" target="_blank">
+            <h3>Introduction</h3>
+            <p>Context for SMA outfits and their socio-technical impact.</p>
+          </a>
+          <a class="doc-card" href="./SMA_Analysis/Methodology.md" target="_blank">
+            <h3>Methodology</h3>
+            <p>Data governance, cleansing, and SMA computation workflow.</p>
+          </a>
+          <a class="doc-card" href="./Technical_Explanation/Executive_Definitions.md" target="_blank">
+            <h3>Executive definitions</h3>
+            <p>Precision Buying Algorithms, Automated Shorts, and more.</p>
+          </a>
+          <a class="doc-card" href="./Data_and_Analysis/SMA_Outfits_Raw_Data/README.md" target="_blank">
+            <h3>SMA Outfits</h3>
+            <p>Full parameter catalog (1–999 periods) with historical notes.</p>
+          </a>
+          <a class="doc-card" href="./Real_Time_Operations/README.md" target="_blank">
+            <h3>Live operations</h3>
+            <p>44,000+ Twitter thread references documenting public trades.</p>
+          </a>
+          <a class="doc-card" href="./Documentation/Operational_Reviews.md" target="_blank">
+            <h3>Operational reviews</h3>
+            <p>Session-level retrospectives with compliance narratives.</p>
+          </a>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <p>Built for GitHub Pages. Deploy the static site and update the DNS or project settings as needed.</p>
+      <p>Need help deploying? See README → Deployment Checklist.</p>
+    </footer>
+
+    <script type="module" src="./assets/js/main.js"></script>
+  </body>
+</html>
