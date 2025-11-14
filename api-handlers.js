@@ -33,12 +33,17 @@ class APIHandler {
         }
 
         const functionName = interval === '1d' ? 'TIME_SERIES_DAILY' : 'TIME_SERIES_INTRADAY';
+        const avInterval = this.timeframeToAlphaVantageInterval(interval);
         const url = interval === '1d' 
-            ? `https://www.alphavantage.co/query?function=${functionName}&symbol=${ticker}&apikey=${this.apiKey}`
-            : `https://www.alphavantage.co/query?function=${functionName}&symbol=${ticker}&interval=${interval}&apikey=${this.apiKey}`;
+            ? `https://www.alphavantage.co/query?function=${functionName}&symbol=${ticker}&outputsize=full&apikey=${this.apiKey}`
+            : `https://www.alphavantage.co/query?function=${functionName}&symbol=${ticker}&interval=${avInterval}&outputsize=full&apikey=${this.apiKey}`;
 
         try {
             const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
             const data = await response.json();
             
             if (data['Error Message']) {
@@ -48,9 +53,13 @@ class APIHandler {
                 throw new Error('API call frequency limit reached. Please wait a moment.');
             }
 
-            const timeSeries = data[interval === '1d' ? 'Time Series (Daily)' : `Time Series (${this.formatInterval(interval)})`];
+            const timeSeriesKey = interval === '1d' 
+                ? 'Time Series (Daily)' 
+                : `Time Series (${this.formatInterval(avInterval)})`;
+            
+            const timeSeries = data[timeSeriesKey];
             if (!timeSeries) {
-                throw new Error('No data returned from API');
+                throw new Error('No data returned from API. Check ticker symbol and interval.');
             }
 
             return this.parseAlphaVantageData(timeSeries);
@@ -68,12 +77,18 @@ class APIHandler {
 
         const resolution = this.timeframeToResolution(timeframe);
         const to = Math.floor(Date.now() / 1000);
-        const from = to - (this.getTimeframeSeconds(timeframe) * 200); // Get enough data for SMA calculations
+        // Get enough data for largest SMA (999 periods) - calculate days needed
+        const daysNeeded = Math.ceil((999 * this.getTimeframeSeconds(timeframe)) / 86400);
+        const from = to - (daysNeeded * 86400); // Convert days to seconds
 
         const url = `https://finnhub.io/api/v1/stock/candle?symbol=${ticker}&resolution=${resolution}&from=${from}&to=${to}&token=${this.apiKey}`;
 
         try {
             const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
             const data = await response.json();
             
             if (data.s === 'no_data') {
@@ -81,6 +96,9 @@ class APIHandler {
             }
             if (data.s === 'error') {
                 throw new Error(data.error || 'Finnhub API error');
+            }
+            if (!data.t || !data.t.length) {
+                throw new Error('No timestamp data in response');
             }
 
             return this.parseFinnhubData(data);
@@ -98,17 +116,29 @@ class APIHandler {
 
         const timespan = this.timeframeToPolygonTimespan(timeframe);
         const multiplier = this.getPolygonMultiplier(timeframe);
-        const to = new Date().toISOString().split('T')[0];
-        const from = new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+        
+        // Calculate date range - need enough data for largest SMA (999 periods)
+        const daysNeeded = Math.ceil((999 * this.getTimeframeSeconds(timeframe)) / 86400);
+        const maxDays = 730; // Polygon free tier limit
+        const daysToFetch = Math.min(daysNeeded, maxDays);
+        
+        const to = new Date();
+        const from = new Date(to.getTime() - (daysToFetch * 24 * 60 * 60 * 1000));
+        const toStr = to.toISOString().split('T')[0];
+        const fromStr = from.toISOString().split('T')[0];
 
-        const url = `https://api.polygon.io/v2/aggs/ticker/${ticker}/range/${multiplier}/${timespan}/${from}/${to}?adjusted=true&sort=asc&limit=5000&apiKey=${this.apiKey}`;
+        const url = `https://api.polygon.io/v2/aggs/ticker/${ticker}/range/${multiplier}/${timespan}/${fromStr}/${toStr}?adjusted=true&sort=asc&limit=5000&apiKey=${this.apiKey}`;
 
         try {
             const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
             const data = await response.json();
             
             if (data.status === 'ERROR') {
-                throw new Error(data.error || 'Polygon API error');
+                throw new Error(data.error || data.message || 'Polygon API error');
             }
             if (!data.results || data.results.length === 0) {
                 throw new Error('No data available for this ticker');
@@ -127,16 +157,24 @@ class APIHandler {
             throw new Error('Twelve Data requires an API key. Get one free at https://twelvedata.com/');
         }
 
-        const url = `https://api.twelvedata.com/time_series?symbol=${ticker}&interval=${interval}&outputsize=200&apikey=${this.apiKey}`;
+        const tdInterval = this.timeframeToTwelveDataInterval(interval);
+        // Get enough data for largest SMA (999 periods)
+        const outputsize = Math.min(5000, Math.max(999, 200)); // Max 5000, min 999
+
+        const url = `https://api.twelvedata.com/time_series?symbol=${ticker}&interval=${tdInterval}&outputsize=${outputsize}&apikey=${this.apiKey}`;
 
         try {
             const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
             const data = await response.json();
             
             if (data.status === 'error') {
                 throw new Error(data.message || 'Twelve Data API error');
             }
-            if (!data.values || data.values.length === 0) {
+            if (!data.values || !Array.isArray(data.values) || data.values.length === 0) {
                 throw new Error('No data available for this ticker');
             }
 
@@ -149,24 +187,29 @@ class APIHandler {
 
     // Yahoo Finance (No API key required, but rate-limited)
     async yahooFinance(ticker, timeframe) {
-        // Using a CORS proxy for Yahoo Finance
-        // Note: In production, you'd want to use a backend proxy
-        const period = timeframe === '1d' ? '1y' : '1mo';
         const interval = this.timeframeToYahooInterval(timeframe);
+        const range = this.timeframeToYahooRange(timeframe);
         
-        // Using yfinance API proxy (free, no key required)
-        const url = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?interval=${interval}&range=${period}`;
+        const url = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?interval=${interval}&range=${range}`;
 
         try {
             const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
             const data = await response.json();
+            
+            if (data.chart && data.chart.error) {
+                throw new Error(data.chart.error.description || 'Yahoo Finance API error');
+            }
             
             if (!data.chart || !data.chart.result || data.chart.result.length === 0) {
                 throw new Error('No data available for this ticker');
             }
 
             const result = data.chart.result[0];
-            if (!result.timestamp || !result.indicators || !result.indicators.quote) {
+            if (!result || !result.timestamp || !result.indicators || !result.indicators.quote || !result.indicators.quote[0]) {
                 throw new Error('Invalid data format from Yahoo Finance');
             }
 
@@ -182,75 +225,135 @@ class APIHandler {
         const prices = [];
         const timestamps = Object.keys(timeSeries).sort();
         
-        timestamps.forEach(timestamp => {
+        for (const timestamp of timestamps) {
             const data = timeSeries[timestamp];
-            prices.push({
-                timestamp: new Date(timestamp).getTime(),
-                open: parseFloat(data['1. open']),
-                high: parseFloat(data['2. high']),
-                low: parseFloat(data['3. low']),
-                close: parseFloat(data['4. close']),
-                volume: parseFloat(data['5. volume'])
-            });
-        });
+            const close = parseFloat(data['4. close']);
+            
+            if (!isNaN(close) && close > 0) {
+                prices.push({
+                    timestamp: new Date(timestamp).getTime(),
+                    open: !isNaN(parseFloat(data['1. open'])) ? parseFloat(data['1. open']) : close,
+                    high: !isNaN(parseFloat(data['2. high'])) ? parseFloat(data['2. high']) : close,
+                    low: !isNaN(parseFloat(data['3. low'])) ? parseFloat(data['3. low']) : close,
+                    close: close,
+                    volume: !isNaN(parseFloat(data['5. volume'])) ? parseFloat(data['5. volume']) : 0
+                });
+            }
+        }
+        
+        if (prices.length === 0) {
+            throw new Error('No valid price data found in Alpha Vantage response');
+        }
 
         return prices.reverse(); // Oldest to newest
     }
 
     parseFinnhubData(data) {
         const prices = [];
-        for (let i = 0; i < data.t.length; i++) {
-            prices.push({
-                timestamp: data.t[i] * 1000,
-                open: data.o[i],
-                high: data.h[i],
-                low: data.l[i],
-                close: data.c[i],
-                volume: data.v[i]
-            });
+        if (!data.t || !data.t.length) {
+            throw new Error('No timestamp data in Finnhub response');
         }
+        
+        for (let i = 0; i < data.t.length; i++) {
+            const close = data.c && data.c[i];
+            if (close !== null && close !== undefined && !isNaN(close)) {
+                prices.push({
+                    timestamp: data.t[i] * 1000, // Convert to milliseconds
+                    open: (data.o && data.o[i] !== null && data.o[i] !== undefined) ? data.o[i] : close,
+                    high: (data.h && data.h[i] !== null && data.h[i] !== undefined) ? data.h[i] : close,
+                    low: (data.l && data.l[i] !== null && data.l[i] !== undefined) ? data.l[i] : close,
+                    close: close,
+                    volume: (data.v && data.v[i] !== null && data.v[i] !== undefined) ? data.v[i] : 0
+                });
+            }
+        }
+        
+        if (prices.length === 0) {
+            throw new Error('No valid price data found in Finnhub response');
+        }
+        
         return prices;
     }
 
     parsePolygonData(results) {
-        return results.map(item => ({
-            timestamp: item.t,
-            open: item.o,
-            high: item.h,
-            low: item.l,
-            close: item.c,
-            volume: item.v
-        }));
+        const prices = [];
+        for (const item of results) {
+            if (item.c !== null && item.c !== undefined && !isNaN(item.c)) {
+                prices.push({
+                    timestamp: item.t, // Already in milliseconds
+                    open: (item.o !== null && item.o !== undefined) ? item.o : item.c,
+                    high: (item.h !== null && item.h !== undefined) ? item.h : item.c,
+                    low: (item.l !== null && item.l !== undefined) ? item.l : item.c,
+                    close: item.c,
+                    volume: (item.v !== null && item.v !== undefined) ? item.v : 0
+                });
+            }
+        }
+        
+        if (prices.length === 0) {
+            throw new Error('No valid price data found in Polygon response');
+        }
+        
+        return prices;
     }
 
     parseTwelveData(values) {
-        return values.map(item => ({
-            timestamp: new Date(item.datetime).getTime(),
-            open: parseFloat(item.open),
-            high: parseFloat(item.high),
-            low: parseFloat(item.low),
-            close: parseFloat(item.close),
-            volume: parseFloat(item.volume)
-        })).reverse();
+        const prices = [];
+        for (const item of values) {
+            const close = parseFloat(item.close);
+            if (!isNaN(close) && close > 0) {
+                prices.push({
+                    timestamp: new Date(item.datetime).getTime(),
+                    open: !isNaN(parseFloat(item.open)) ? parseFloat(item.open) : close,
+                    high: !isNaN(parseFloat(item.high)) ? parseFloat(item.high) : close,
+                    low: !isNaN(parseFloat(item.low)) ? parseFloat(item.low) : close,
+                    close: close,
+                    volume: !isNaN(parseFloat(item.volume)) ? parseFloat(item.volume) : 0
+                });
+            }
+        }
+        
+        if (prices.length === 0) {
+            throw new Error('No valid price data found in Twelve Data response');
+        }
+        
+        return prices.reverse(); // Oldest to newest
     }
 
     parseYahooData(result) {
         const prices = [];
-        const timestamps = result.timestamp;
+        const timestamps = result.timestamp || [];
         const quote = result.indicators.quote[0];
         
+        if (!quote || !timestamps.length) {
+            throw new Error('No valid price data in response');
+        }
+        
         for (let i = 0; i < timestamps.length; i++) {
-            if (quote.close[i] !== null) {
+            // Check if we have valid data for this timestamp
+            const close = quote.close && quote.close[i];
+            const open = quote.open && quote.open[i];
+            const high = quote.high && quote.high[i];
+            const low = quote.low && quote.low[i];
+            const volume = quote.volume && quote.volume[i];
+            
+            // Only include if we have at least close price
+            if (close !== null && close !== undefined && !isNaN(close)) {
                 prices.push({
-                    timestamp: timestamps[i] * 1000,
-                    open: quote.open[i],
-                    high: quote.high[i],
-                    low: quote.low[i],
-                    close: quote.close[i],
-                    volume: quote.volume[i]
+                    timestamp: timestamps[i] * 1000, // Convert to milliseconds
+                    open: open !== null && open !== undefined ? open : close,
+                    high: high !== null && high !== undefined ? high : close,
+                    low: low !== null && low !== undefined ? low : close,
+                    close: close,
+                    volume: volume !== null && volume !== undefined ? volume : 0
                 });
             }
         }
+        
+        if (prices.length === 0) {
+            throw new Error('No valid price data found after parsing');
+        }
+        
         return prices;
     }
 
@@ -279,10 +382,36 @@ class APIHandler {
 
     timeframeToYahooInterval(timeframe) {
         const map = {
-            '1m': '1m', '5m': '5m', '15m': '15m', '30m': '30m',
-            '1h': '1h', '1d': '1d', '1W': '1wk', '1M': '1mo'
+            '1m': '1m', 
+            '5m': '5m', 
+            '15m': '15m', 
+            '30m': '30m',
+            '1h': '1h', 
+            '2h': '1h', // Yahoo doesn't support 2h, use 1h
+            '4h': '1h', // Yahoo doesn't support 4h, use 1h
+            '1d': '1d', 
+            '1W': '1wk', 
+            '1M': '1mo'
         };
         return map[timeframe] || '1d';
+    }
+
+    timeframeToYahooRange(timeframe) {
+        // Select appropriate range to get enough historical data for SMA calculations
+        // Need at least 999 periods for the largest SMA outfit
+        const map = {
+            '1m': '1d',    // 1 day for 1-minute data
+            '5m': '5d',    // 5 days for 5-minute data
+            '15m': '1mo',  // 1 month for 15-minute data
+            '30m': '3mo',  // 3 months for 30-minute data
+            '1h': '1y',    // 1 year for hourly data
+            '2h': '1y',    // 1 year for 2-hour data
+            '4h': '1y',    // 1 year for 4-hour data
+            '1d': '2y',    // 2 years for daily data
+            '1W': '5y',    // 5 years for weekly data
+            '1M': '10y'    // 10 years for monthly data
+        };
+        return map[timeframe] || '1y';
     }
 
     getTimeframeSeconds(timeframe) {
@@ -299,6 +428,32 @@ class APIHandler {
 
     formatInterval(interval) {
         return interval.charAt(0).toUpperCase() + interval.slice(1);
+    }
+
+    timeframeToAlphaVantageInterval(timeframe) {
+        const map = {
+            '1m': '1min',
+            '5m': '5min',
+            '15m': '15min',
+            '30m': '30min',
+            '1h': '60min',
+            '1d': 'daily'
+        };
+        return map[timeframe] || 'daily';
+    }
+
+    timeframeToTwelveDataInterval(timeframe) {
+        const map = {
+            '1m': '1min',
+            '5m': '5min',
+            '15m': '15min',
+            '30m': '30min',
+            '1h': '1hour',
+            '1d': '1day',
+            '1W': '1week',
+            '1M': '1month'
+        };
+        return map[timeframe] || '1day';
     }
 }
 
