@@ -7,17 +7,20 @@ const API_CONFIGS = {
         baseUrl: 'https://www.alphavantage.co/query',
         requiresKey: true,
         keyParam: 'apikey',
-        info: 'Get free API key at alphavantage.co',
+        info: 'Get free API key at alphavantage.co (5 API calls/min, 500/day limit)',
         getQuoteUrl: (symbol, apiKey) => 
             `${API_CONFIGS.alphavantage.baseUrl}?function=GLOBAL_QUOTE&symbol=${symbol}&apikey=${apiKey}`,
         getTimeSeriesUrl: (symbol, interval, apiKey) => {
+            if (!apiKey) {
+                throw new Error('Alpha Vantage requires an API key');
+            }
             const functionMap = {
                 '1m': 'TIME_SERIES_INTRADAY',
                 '5m': 'TIME_SERIES_INTRADAY',
                 '15m': 'TIME_SERIES_INTRADAY',
                 '30m': 'TIME_SERIES_INTRADAY',
                 '1h': 'TIME_SERIES_INTRADAY',
-                '1d': 'TIME_SERIES_DAILY'
+                '1d': 'TIME_SERIES_DAILY_ADJUSTED'
             };
             const intervalMap = {
                 '1m': '1min',
@@ -27,26 +30,34 @@ const API_CONFIGS = {
                 '1h': '60min',
                 '1d': 'daily'
             };
-            const func = functionMap[interval] || 'TIME_SERIES_DAILY';
+            const func = functionMap[interval] || 'TIME_SERIES_DAILY_ADJUSTED';
             const intervalParam = intervalMap[interval] || 'daily';
-            return `${API_CONFIGS.alphavantage.baseUrl}?function=${func}&symbol=${symbol}&interval=${intervalParam}&apikey=${apiKey}&outputsize=full`;
+            const outputsize = interval === '1d' ? 'full' : 'compact';
+            return `${API_CONFIGS.alphavantage.baseUrl}?function=${func}&symbol=${symbol}&interval=${intervalParam}&apikey=${apiKey}&outputsize=${outputsize}`;
         },
         parseData: (data, interval) => {
-            if (data['Error Message'] || data['Note']) {
-                throw new Error(data['Error Message'] || 'API call frequency limit exceeded');
+            if (data['Error Message']) {
+                throw new Error(data['Error Message']);
+            }
+            if (data['Note']) {
+                throw new Error('API call frequency limit exceeded. Please wait a minute.');
             }
             const timeSeriesKey = interval === '1d' 
                 ? 'Time Series (Daily)'
-                : `Time Series (${interval === '1m' ? '1min' : interval === '5m' ? '5min' : interval === '15m' ? '15min' : interval === '30m' ? '30min' : '60min'})`;
+                : interval === '1m' ? 'Time Series (1min)'
+                : interval === '5m' ? 'Time Series (5min)'
+                : interval === '15m' ? 'Time Series (15min)'
+                : interval === '30m' ? 'Time Series (30min)'
+                : 'Time Series (60min)';
             const series = data[timeSeriesKey];
             if (!series) return [];
             return Object.entries(series).map(([timestamp, values]) => ({
-                timestamp: new Date(timestamp),
-                open: parseFloat(values['1. open']),
-                high: parseFloat(values['2. high']),
-                low: parseFloat(values['3. low']),
-                close: parseFloat(values['4. close']),
-                volume: parseFloat(values['5. volume'])
+                timestamp: new Date(timestamp + ' ' + (data['Meta Data']?.['5. Time Zone'] || 'UTC')),
+                open: parseFloat(values['1. open'] || values['1. open']),
+                high: parseFloat(values['2. high'] || values['2. high']),
+                low: parseFloat(values['3. low'] || values['3. low']),
+                close: parseFloat(values['4. close'] || values['5. adjusted close'] || values['4. close']),
+                volume: parseFloat(values['5. volume'] || values['6. volume'] || 0)
             })).sort((a, b) => a.timestamp - b.timestamp);
         }
     },
@@ -56,10 +67,13 @@ const API_CONFIGS = {
         baseUrl: 'https://finnhub.io/api/v1',
         requiresKey: true,
         keyParam: 'token',
-        info: 'Get free API key at finnhub.io',
+        info: 'Get free API key at finnhub.io (60 calls/min limit)',
         getQuoteUrl: (symbol, apiKey) => 
             `${API_CONFIGS.finnhub.baseUrl}/quote?symbol=${symbol}&token=${apiKey}`,
         getTimeSeriesUrl: (symbol, interval, apiKey) => {
+            if (!apiKey) {
+                throw new Error('Finnhub requires an API key');
+            }
             const resolutionMap = {
                 '1m': '1',
                 '5m': '5',
@@ -70,19 +84,25 @@ const API_CONFIGS = {
             };
             const resolution = resolutionMap[interval] || 'D';
             const to = Math.floor(Date.now() / 1000);
+            // Free tier: max 1 year for daily, 30 days for intraday
             const from = to - (interval === '1d' ? 365 * 24 * 60 * 60 : 30 * 24 * 60 * 60);
             return `${API_CONFIGS.finnhub.baseUrl}/stock/candle?symbol=${symbol}&resolution=${resolution}&from=${from}&to=${to}&token=${apiKey}`;
         },
         parseData: (data) => {
-            if (data.s === 'no_data' || !data.c) return [];
+            if (data.s === 'no_data' || data.s === 'error' || !data.c || !data.t) {
+                return [];
+            }
+            if (!Array.isArray(data.t) || data.t.length === 0) {
+                return [];
+            }
             return data.t.map((timestamp, i) => ({
                 timestamp: new Date(timestamp * 1000),
-                open: data.o[i],
-                high: data.h[i],
-                low: data.l[i],
-                close: data.c[i],
-                volume: data.v[i]
-            }));
+                open: data.o && data.o[i] !== undefined ? data.o[i] : null,
+                high: data.h && data.h[i] !== undefined ? data.h[i] : null,
+                low: data.l && data.l[i] !== undefined ? data.l[i] : null,
+                close: data.c && data.c[i] !== undefined ? data.c[i] : null,
+                volume: data.v && data.v[i] !== undefined ? data.v[i] : 0
+            })).filter(item => item.close !== null && item.close !== undefined);
         }
     },
     polygon: {
@@ -91,27 +111,38 @@ const API_CONFIGS = {
         baseUrl: 'https://api.polygon.io/v2',
         requiresKey: true,
         keyParam: 'apikey',
-        info: 'Get free API key at polygon.io',
+        info: 'Get free API key at polygon.io (5 calls/min limit)',
         getQuoteUrl: (symbol, apiKey) => 
             `https://api.polygon.io/v2/last/trade/${symbol}?apikey=${apiKey}`,
         getTimeSeriesUrl: (symbol, interval, apiKey) => {
+            if (!apiKey) {
+                throw new Error('Polygon.io requires an API key');
+            }
             const multiplier = interval === '1m' ? 1 : interval === '5m' ? 5 : interval === '15m' ? 15 : interval === '30m' ? 30 : interval === '1h' ? 60 : 1;
             const timespan = interval === '1d' ? 'day' : 'minute';
-            const from = new Date();
-            from.setDate(from.getDate() - (interval === '1d' ? 365 : 30));
             const to = new Date();
-            return `https://api.polygon.io/v2/aggs/ticker/${symbol}/range/${multiplier}/${timespan}/${from.toISOString().split('T')[0]}/${to.toISOString().split('T')[0]}?adjusted=true&sort=asc&apikey=${apiKey}`;
+            const from = new Date();
+            // Free tier: max 2 years for daily, 1 year for intraday
+            from.setDate(from.getDate() - (interval === '1d' ? 730 : 365));
+            const fromStr = from.toISOString().split('T')[0];
+            const toStr = to.toISOString().split('T')[0];
+            return `https://api.polygon.io/v2/aggs/ticker/${symbol}/range/${multiplier}/${timespan}/${fromStr}/${toStr}?adjusted=true&sort=asc&limit=50000&apikey=${apiKey}`;
         },
         parseData: (data) => {
-            if (!data.results || data.results.length === 0) return [];
+            if (data.status === 'ERROR' || data.error) {
+                throw new Error(data.error || data.message || 'Polygon API error');
+            }
+            if (!data.results || !Array.isArray(data.results) || data.results.length === 0) {
+                return [];
+            }
             return data.results.map(item => ({
                 timestamp: new Date(item.t),
-                open: item.o,
-                high: item.h,
-                low: item.l,
-                close: item.c,
-                volume: item.v
-            }));
+                open: item.o !== undefined ? item.o : null,
+                high: item.h !== undefined ? item.h : null,
+                low: item.l !== undefined ? item.l : null,
+                close: item.c !== undefined ? item.c : null,
+                volume: item.v !== undefined ? item.v : 0
+            })).filter(item => item.close !== null && item.close !== undefined);
         }
     },
     twelvedata: {
@@ -120,10 +151,13 @@ const API_CONFIGS = {
         baseUrl: 'https://api.twelvedata.com',
         requiresKey: true,
         keyParam: 'apikey',
-        info: 'Get free API key at twelvedata.com',
+        info: 'Get free API key at twelvedata.com (800 calls/day limit)',
         getQuoteUrl: (symbol, apiKey) => 
             `${API_CONFIGS.twelvedata.baseUrl}/price?symbol=${symbol}&apikey=${apiKey}`,
         getTimeSeriesUrl: (symbol, interval, apiKey) => {
+            if (!apiKey) {
+                throw new Error('Twelve Data requires an API key');
+            }
             const intervalMap = {
                 '1m': '1min',
                 '5m': '5min',
@@ -133,21 +167,25 @@ const API_CONFIGS = {
                 '1d': '1day'
             };
             const intervalParam = intervalMap[interval] || '1day';
-            return `${API_CONFIGS.twelvedata.baseUrl}/time_series?symbol=${symbol}&interval=${intervalParam}&apikey=${apiKey}&outputsize=5000`;
+            // Free tier: max 5000 data points
+            const outputsize = interval === '1d' ? '5000' : '5000';
+            return `${API_CONFIGS.twelvedata.baseUrl}/time_series?symbol=${symbol}&interval=${intervalParam}&apikey=${apiKey}&outputsize=${outputsize}&format=json`;
         },
         parseData: (data) => {
             if (data.status === 'error') {
-                throw new Error(data.message || 'API error');
+                throw new Error(data.message || 'Twelve Data API error');
             }
-            if (!data.values) return [];
+            if (!data.values || !Array.isArray(data.values)) {
+                return [];
+            }
             return data.values.map(item => ({
                 timestamp: new Date(item.datetime),
-                open: parseFloat(item.open),
-                high: parseFloat(item.high),
-                low: parseFloat(item.low),
-                close: parseFloat(item.close),
-                volume: parseFloat(item.volume)
-            })).sort((a, b) => a.timestamp - b.timestamp);
+                open: parseFloat(item.open) || null,
+                high: parseFloat(item.high) || null,
+                low: parseFloat(item.low) || null,
+                close: parseFloat(item.close) || null,
+                volume: parseFloat(item.volume) || 0
+            })).filter(item => item.close !== null && !isNaN(item.close)).sort((a, b) => a.timestamp - b.timestamp);
         }
     },
     yahoo: {
@@ -158,10 +196,8 @@ const API_CONFIGS = {
         keyParam: null,
         info: 'No API key required - uses public Yahoo Finance API',
         getQuoteUrl: (symbol) => 
-            `${API_CONFIGS.yahoo.baseUrl}/${symbol}`,
+            `${API_CONFIGS.yahoo.baseUrl}/${symbol}?interval=1d&range=1d`,
         getTimeSeriesUrl: (symbol, interval) => {
-            const period1 = Math.floor((Date.now() - (365 * 24 * 60 * 60 * 1000)) / 1000);
-            const period2 = Math.floor(Date.now() / 1000);
             const intervalMap = {
                 '1m': '1m',
                 '5m': '5m',
@@ -170,23 +206,43 @@ const API_CONFIGS = {
                 '1h': '1h',
                 '1d': '1d'
             };
+            const rangeMap = {
+                '1m': '1d',
+                '5m': '5d',
+                '15m': '1mo',
+                '30m': '1mo',
+                '1h': '3mo',
+                '1d': '1y'
+            };
             const intervalParam = intervalMap[interval] || '1d';
-            return `${API_CONFIGS.yahoo.baseUrl}/${symbol}?period1=${period1}&period2=${period2}&interval=${intervalParam}`;
+            const rangeParam = rangeMap[interval] || '1y';
+            return `${API_CONFIGS.yahoo.baseUrl}/${symbol}?interval=${intervalParam}&range=${rangeParam}`;
         },
         parseData: (data) => {
-            if (!data.chart || !data.chart.result || data.chart.result.length === 0) return [];
+            if (!data.chart || !data.chart.result || data.chart.result.length === 0) {
+                return [];
+            }
             const result = data.chart.result[0];
-            if (!result.timestamp || !result.indicators || !result.indicators.quote) return [];
+            if (!result.timestamp || !result.indicators || !result.indicators.quote || result.indicators.quote.length === 0) {
+                return [];
+            }
             const timestamps = result.timestamp;
             const quote = result.indicators.quote[0];
-            return timestamps.map((timestamp, i) => ({
-                timestamp: new Date(timestamp * 1000),
-                open: quote.open[i],
-                high: quote.high[i],
-                low: quote.low[i],
-                close: quote.close[i],
-                volume: quote.volume[i]
-            })).filter(item => item.close !== null);
+            const adjclose = result.indicators.adjclose && result.indicators.adjclose[0] ? result.indicators.adjclose[0].adjclose : null;
+            
+            return timestamps.map((timestamp, i) => {
+                // Use adjusted close if available, otherwise use regular close
+                const closePrice = adjclose && adjclose[i] !== null ? adjclose[i] : (quote.close[i] !== null ? quote.close[i] : null);
+                
+                return {
+                    timestamp: new Date(timestamp * 1000),
+                    open: quote.open[i] !== null ? quote.open[i] : null,
+                    high: quote.high[i] !== null ? quote.high[i] : null,
+                    low: quote.low[i] !== null ? quote.low[i] : null,
+                    close: closePrice,
+                    volume: quote.volume[i] !== null ? quote.volume[i] : 0
+                };
+            }).filter(item => item.close !== null && item.close !== undefined);
         }
     },
     custom: {
@@ -239,7 +295,7 @@ async function fetchStockData(symbol, interval, apiKey = null) {
 
     const key = apiKey || currentApiConfig.apiKey;
     if (config.requiresKey && !key && config.name !== 'Yahoo Finance') {
-        throw new Error(`${config.name} requires an API key`);
+        throw new Error(`${config.name} requires an API key. Please enter your API key in the configuration.`);
     }
 
     const url = config.getTimeSeriesUrl(symbol, interval, key);
@@ -247,13 +303,30 @@ async function fetchStockData(symbol, interval, apiKey = null) {
     try {
         const response = await fetch(url);
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            const errorText = await response.text();
+            throw new Error(`HTTP error! status: ${response.status}, message: ${errorText.substring(0, 100)}`);
         }
         const data = await response.json();
-        return config.parseData(data, interval);
+        
+        // Check for API-specific error responses
+        if (data.error && !data.chart) {
+            throw new Error(data.error.message || data.error || 'API returned an error');
+        }
+        
+        const parsedData = config.parseData(data, interval);
+        
+        if (!parsedData || parsedData.length === 0) {
+            throw new Error(`No data returned for ${symbol} on ${interval} timeframe. The symbol may not be available or the API may not support this timeframe.`);
+        }
+        
+        return parsedData;
     } catch (error) {
-        console.error(`Error fetching data for ${symbol}:`, error);
-        throw error;
+        console.error(`Error fetching data for ${symbol} on ${interval}:`, error);
+        // Re-throw with more context
+        if (error.message) {
+            throw error;
+        }
+        throw new Error(`Failed to fetch data for ${symbol}: ${error.message || error}`);
     }
 }
 
