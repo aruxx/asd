@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMA Outfit Analysis - Stock Market Scanner</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>SMA Outfit Analysis</h1>
+            <p class="subtitle">Real-time Simple Moving Average Analysis for Public Equity Markets</p>
+        </header>
+
+        <div class="main-content">
+            <!-- API Configuration Section -->
+            <section class="api-config-section">
+                <h2>API Configuration</h2>
+                <div class="api-selector">
+                    <label for="apiProvider">Select API Provider:</label>
+                    <select id="apiProvider" class="api-select">
+                        <option value="alphavantage">Alpha Vantage (Free)</option>
+                        <option value="finnhub">Finnhub (Free)</option>
+                        <option value="polygon">Polygon.io (Free)</option>
+                        <option value="twelvedata">Twelve Data (Free)</option>
+                        <option value="yahoo">Yahoo Finance (Free - No API Key)</option>
+                        <option value="custom">Custom API (Enter Your Own Key)</option>
+                    </select>
+                </div>
+                <div class="api-key-input" id="apiKeyContainer">
+                    <label for="apiKey">API Key:</label>
+                    <input type="text" id="apiKey" placeholder="Enter your API key (optional for free APIs)">
+                    <small class="api-info" id="apiInfo">Alpha Vantage: Get free key at alphavantage.co</small>
+                </div>
+                <button id="saveApiConfig" class="btn btn-primary">Save Configuration</button>
+            </section>
+
+            <!-- Scanner Configuration Section -->
+            <section class="scanner-config-section">
+                <h2>Scanner Configuration</h2>
+                <div class="config-grid">
+                    <div class="config-item">
+                        <label for="stockList">Stocks to Scan (comma-separated):</label>
+                        <textarea id="stockList" rows="3" placeholder="AAPL, MSFT, GOOGL, NVDA, TSLA, SPY, QQQ, DIA, etc.">AAPL, MSFT, GOOGL, NVDA, TSLA, SPY, QQQ, DIA</textarea>
+                    </div>
+                    <div class="config-item">
+                        <label>Timeframes:</label>
+                        <div class="checkbox-group" id="timeframes">
+                            <label><input type="checkbox" value="1m" checked> 1m</label>
+                            <label><input type="checkbox" value="5m" checked> 5m</label>
+                            <label><input type="checkbox" value="15m" checked> 15m</label>
+                            <label><input type="checkbox" value="30m" checked> 30m</label>
+                            <label><input type="checkbox" value="1h" checked> 1h</label>
+                            <label><input type="checkbox" value="1d" checked> 1d</label>
+                        </div>
+                    </div>
+                    <div class="config-item">
+                        <label>SMA Outfits:</label>
+                        <div class="checkbox-group" id="smaOutfits">
+                            <label><input type="checkbox" value="10/50/200" checked> 10/50/200 (S&P)</label>
+                            <label><input type="checkbox" value="20/100/250" checked> 20/100/250 (NASDAQ)</label>
+                            <label><input type="checkbox" value="30/60/90/300/600/900" checked> 30/60/90/300/600/900 (DJI)</label>
+                            <label><input type="checkbox" value="33/66/99/333/666/999" checked> 33/66/99/333/666/999</label>
+                            <label><input type="checkbox" value="11/44/88/111/444/888" checked> 11/44/88/111/444/888</label>
+                            <label><input type="checkbox" value="19/37/73/143/279/548" checked> 19/37/73/143/279/548 (Waring's)</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="scan-controls">
+                    <button id="startScan" class="btn btn-success">Start Scan</button>
+                    <button id="stopScan" class="btn btn-danger" disabled>Stop Scan</button>
+                    <button id="clearResults" class="btn btn-secondary">Clear Results</button>
+                </div>
+            </section>
+
+            <!-- Active Scans Section -->
+            <section class="active-scans-section">
+                <h2>Active Scanning Programs</h2>
+                <div id="activeScansList" class="active-scans-list">
+                    <p class="no-scans">No active scans running</p>
+                </div>
+            </section>
+
+            <!-- Results Section -->
+            <section class="results-section">
+                <h2>Scan Results</h2>
+                <div id="resultsContainer" class="results-container">
+                    <p class="no-results">No results yet. Start a scan to see SMA outfit signals.</p>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script src="api-config.js"></script>
+    <script src="sma-calculator.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
