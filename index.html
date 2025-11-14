@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SMA Outfit Scanner</title>
+    <meta
+      name="description"
+      content="Real-time SMA outfit scanner with multi-provider market data support and GitHub Pages friendly deployment."
+    />
+    <link rel="stylesheet" href="assets/css/styles.css" />
+  </head>
+  <body>
+    <header class="hero">
+      <div class="hero__content">
+        <div>
+          <p class="eyebrow">Live SMA outfit telemetry</p>
+          <h1>Open SMA Outfit Scanner</h1>
+          <p>
+            Launch fully client-side scans across every SMA outfit, timeframe, and ticker you care about.
+            Switch between five battle-tested free data APIs or plug in your own key for premium throughput. Nothing
+            leaves your browser except direct calls to the provider you choose.
+          </p>
+        </div>
+        <div class="hero__actions">
+          <button id="start-scan-btn" class="primary">Start full scan</button>
+          <button id="quick-scan-btn" class="ghost">Quick sanity check</button>
+        </div>
+        <div class="stat-grid">
+          <div class="stat-card">
+            <p class="eyebrow">Programs</p>
+            <h3 id="active-program-count">0 active programs</h3>
+            <small id="last-sync">No scans yet</small>
+          </div>
+          <div class="stat-card">
+            <p class="eyebrow">API Providers</p>
+            <h3>5 verified data options</h3>
+            <small>Bring your own key for premium tiers or use the demo keys provided.</small>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section class="panel">
+        <header>
+          <h2>Data Provider & Credentials</h2>
+          <p>Pick your preferred feed, paste a key if needed, and keep it stored locally.</p>
+        </header>
+        <div class="field-group">
+          <label for="provider-select">Provider</label>
+          <select id="provider-select"></select>
+        </div>
+        <div class="field-group">
+          <label for="api-key-input">API Key</label>
+          <input id="api-key-input" type="text" placeholder="Enter API key" autocomplete="off" />
+          <label class="chip" style="margin-top: 0.5rem">
+            <input type="checkbox" id="remember-key" checked />
+            <span>
+              <strong>Remember locally</strong>
+              <small>Keys are stored in your browser only.</small>
+            </span>
+          </label>
+        </div>
+        <div id="provider-details"></div>
+      </section>
+
+      <section class="panel details-grid">
+        <div>
+          <header>
+            <h2>Ticker Universe</h2>
+            <p>Paste any list. The bundled set mirrors the instruments described in the SMA outfit research.</p>
+          </header>
+          <textarea id="ticker-input"></textarea>
+          <div class="control-row">
+            <button id="load-default-tickers">Load curated list</button>
+            <span id="workload-summary" class="eyebrow">0 workload</span>
+          </div>
+        </div>
+        <div>
+          <header>
+            <h2>Timeframes</h2>
+            <p>Select the institutional and extended-hour frames to evaluate.</p>
+          </header>
+          <div class="chip-grid" data-timeframe-list></div>
+          <div class="control-row">
+            <button id="select-all-timeframes">Select all timeframes</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <header>
+          <h2>SMA Outfits</h2>
+          <p>Toggle any outfit you want to scan. Every configuration maps back to institutional playbooks.</p>
+        </header>
+        <div class="chip-grid" data-outfit-list></div>
+        <div class="control-row">
+          <button id="select-core-outfits">Core systems (SPX + NAS + DJI)</button>
+          <button id="select-all-outfits">Select all outfits</button>
+        </div>
+      </section>
+
+      <section class="panel">
+        <header>
+          <h2>Active Programs</h2>
+          <p>Each scan shows live progress, logging, and cancel controls.</p>
+        </header>
+        <div id="program-list"></div>
+      </section>
+
+      <section class="panel">
+        <header>
+          <h2>Latest SMA Signals</h2>
+          <p>Review the freshest insight from current workloads. Expand any card for stack breakdowns.</p>
+        </header>
+        <div class="control-row">
+          <button id="clear-results-btn">Clear results</button>
+        </div>
+        <div id="results-grid"></div>
+      </section>
+    </main>
+
+    <div id="toast-container" class="toast-container"></div>
+    <footer>
+      Built for GitHub Pages deployment. No secrets stored on servers—everything happens in your browser.
+    </footer>
+
+    <script type="module" src="assets/js/main.js"></script>
+  </body>
+</html>

@@ -1,281 +1,77 @@
-<!-- Improved compatibility of back to top link: See: https://github.com/othneildrew/Best-README-Template/pull/73 -->
-<a id="readme-top"></a>
-<!--
-*** Thanks for checking out the Best-README-Template. If you have a suggestion
-*** that would make this better, please fork the repo and create a pull request
-*** or simply open an issue with the tag "enhancement".
-*** Don't forget to give the project a star!
-*** Thanks again! Now go create something AMAZING! :D
--->
+# SMA Outfit Transparency Hub
 
+A public-facing research hub and browser-based scanner that documents, explains, and actively monitors Simple Moving Average (SMA) outfits used by institutional trading divisions. The project combines narrative documentation, dataset manifests, and a zero-backend web application that can run on GitHub Pages and plug into multiple free market data APIs.
 
+## Highlights
+- **Full research library** – Repository structure mirrors the SMA outfit methodology: analysis briefs, technical definitions, processed data notes, visualization scaffolds, and real-time operation templates.
+- **Multi-provider scanner** – Choose between five free/bring-your-own-key APIs (Financial Modeling Prep, Alpha Vantage, Twelve Data, Polygon.io, and Stooq). Each provider exposes unique intervals and rate limits that are fully documented in-app.
+- **Unlimited SMA outfits** – Scan any ticker list across every timeframe and outfit described in the research. The engine computes SMA stacks, crossover classifications, volatility diagnostics, and renders the results instantly in the browser.
+- **Active program tracker** – Every scan spins up a client-side “program” with real-time progress, cancellation controls, logs, and toast notifications so you always know what is running.
+- **GitHub Pages ready** – The site is a static bundle (`index.html + assets/`) that deploys without a backend. API keys never leave the browser.
 
-<!-- PROJECT SHIELDS -->
-<!--
-*** I'm using markdown "reference style" links for readability.
-*** Reference links are enclosed in brackets [ ] instead of parentheses ( ).
-*** See the bottom of this document for the declaration of the reference variables
-*** for contributors-url, forks-url, etc. This is an optional, concise syntax you may use.
-*** https://www.markdownguide.org/basic-syntax/#reference-style-links
--->
-[![Contributors][contributors-shield]][contributors-url]
-[![Forks][forks-shield]][forks-url]
-[![Stargazers][stars-shield]][stars-url]
-[![Issues][issues-shield]][issues-url]
-[![Unlicense License][license-shield]][license-url]
-[![LinkedIn][linkedin-shield]][linkedin-url]
+## Repository Layout
+```
+SMA_Analysis/                # Introduction, overview, methodology, and background research
+Technical_Explanation/       # Executive trading definitions (Precision Buying, Singular Point Stops, etc.)
+Data_and_Analysis/           # Raw outfit catalog + processed data guidance
+Visualizations/              # Market impact & strategic operations storyboard templates
+Documentation/               # Technical papers and operational review notes
+Real_Time_Operations/        # Case-study logging template for live threads
+Tools_and_Scripts/           # Guidance for ingestion tools and simulation models
+index.html + assets/         # GitHub Pages–ready SMA Outfit Scanner
+```
 
-
-
-<!-- PROJECT LOGO -->
-<br />
-<div align="center">
-  <a href="https://github.com/othneildrew/Best-README-Template">
-    <img src="images/logo.png" alt="Logo" width="80" height="80">
-  </a>
-
-  <h3 align="center">Best-README-Template</h3>
-
-  <p align="center">
-    An awesome README template to jumpstart your projects!
-    <br />
-    <a href="https://github.com/othneildrew/Best-README-Template"><strong>Explore the docs »</strong></a>
-    <br />
-    <br />
-    <a href="https://github.com/othneildrew/Best-README-Template">View Demo</a>
-    &middot;
-    <a href="https://github.com/othneildrew/Best-README-Template/issues/new?labels=bug&template=bug-report---.md">Report Bug</a>
-    &middot;
-    <a href="https://github.com/othneildrew/Best-README-Template/issues/new?labels=enhancement&template=feature-request---.md">Request Feature</a>
-  </p>
-</div>
-
-
-
-<!-- TABLE OF CONTENTS -->
-<details>
-  <summary>Table of Contents</summary>
-  <ol>
-    <li>
-      <a href="#about-the-project">About The Project</a>
-      <ul>
-        <li><a href="#built-with">Built With</a></li>
-      </ul>
-    </li>
-    <li>
-      <a href="#getting-started">Getting Started</a>
-      <ul>
-        <li><a href="#prerequisites">Prerequisites</a></li>
-        <li><a href="#installation">Installation</a></li>
-      </ul>
-    </li>
-    <li><a href="#usage">Usage</a></li>
-    <li><a href="#roadmap">Roadmap</a></li>
-    <li><a href="#contributing">Contributing</a></li>
-    <li><a href="#license">License</a></li>
-    <li><a href="#contact">Contact</a></li>
-    <li><a href="#acknowledgments">Acknowledgments</a></li>
-  </ol>
-</details>
-
-
-
-<!-- ABOUT THE PROJECT -->
-## About The Project
-
-[![Product Name Screen Shot][product-screenshot]](https://example.com)
-
-There are many great README templates available on GitHub; however, I didn't find one that really suited my needs so I created this enhanced one. I want to create a README template so amazing that it'll be the last one you ever need -- I think this is it.
-
-Here's why:
-* Your time should be focused on creating something amazing. A project that solves a problem and helps others
-* You shouldn't be doing the same tasks over and over like creating a README from scratch
-* You should implement DRY principles to the rest of your life :smile:
-
-Of course, no one template will serve all projects since your needs may be different. So I'll be adding more in the near future. You may also suggest changes by forking this repo and creating a pull request or opening an issue. Thanks to all the people have contributed to expanding this template!
-
-Use the `BLANK_README.md` to get started.
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
-
-### Built With
-
-This section should list any major frameworks/libraries used to bootstrap your project. Leave any add-ons/plugins for the acknowledgements section. Here are a few examples.
-
-* [![Next][Next.js]][Next-url]
-* [![React][React.js]][React-url]
-* [![Vue][Vue.js]][Vue-url]
-* [![Angular][Angular.io]][Angular-url]
-* [![Svelte][Svelte.dev]][Svelte-url]
-* [![Laravel][Laravel.com]][Laravel-url]
-* [![Bootstrap][Bootstrap.com]][Bootstrap-url]
-* [![JQuery][JQuery.com]][JQuery-url]
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
-
-<!-- GETTING STARTED -->
-## Getting Started
-
-This is an example of how you may give instructions on setting up your project locally.
-To get a local copy up and running follow these simple example steps.
-
-### Prerequisites
-
-This is an example of how to list things you need to use the software and how to install them.
-* npm
-  ```sh
-  npm install npm@latest -g
-  ```
-
-### Installation
-
-_Below is an example of how you can instruct your audience on installing and setting up your app. This template doesn't rely on any external dependencies or services._
-
-1. Get a free API Key at [https://example.com](https://example.com)
-2. Clone the repo
-   ```sh
-   git clone https://github.com/github_username/repo_name.git
+## Running the Web App Locally
+1. Clone the repository.
+   ```bash
+   git clone <repo-url>
+   cd <repo>
    ```
-3. Install NPM packages
-   ```sh
-   npm install
+2. Serve the static site with any HTTP server (examples below) and open the printed URL.
+   ```bash
+   # Option A: Node
+   npx serve .
+
+   # Option B: Python
+   python3 -m http.server 8080
    ```
-4. Enter your API in `config.js`
-   ```js
-   const API_KEY = 'ENTER YOUR API';
-   ```
-5. Change git remote url to avoid accidental pushes to base project
-   ```sh
-   git remote set-url origin github_username/repo_name
-   git remote -v # confirm the changes
-   ```
+3. Load the page, choose a provider, paste your API key if required, and start a scan.
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+> The Financial Modeling Prep and Alpha Vantage integrations ship with `demo` keys for proof-of-life. Replace them with personal keys for sustained workloads.
 
+## Deploying to GitHub Pages
+1. Push the repository to GitHub.
+2. In **Settings → Pages**, set the source to the `main` branch (root directory) and save.
+3. GitHub will publish `https://<username>.github.io/<repo>/`. Because all assets are relative, no additional build step is needed.
+4. Update the README (or repository description) with the published URL once Pages finishes provisioning.
 
+If you prefer a `docs/` deployment workflow, move `index.html` and `assets/` into a `docs/` folder and point Pages at that directory.
 
-<!-- USAGE EXAMPLES -->
-## Usage
+## API Providers
+| Provider | Free Tier Notes | Supported Timeframes |
+| --- | --- | --- |
+| Financial Modeling Prep | Demo key included; generous intraday history | 1m, 5m, 15m, 30m, 1h, 4h, 1d |
+| Alpha Vantage | Demo key; 5 calls/minute; best for compact bursts | 1m, 5m, 15m, 30m, 1h, 1d |
+| Twelve Data | Sign up for a free key; global symbols; JSON-first | 1m, 5m, 15m, 30m, 1h, 4h, 1d |
+| Polygon.io | Requires personal key; superior aggregated data | 1m, 5m, 15m, 30m, 1h, 4h, 1d |
+| Stooq CSV | No key; end-of-day focus; excellent fallback | 1d |
 
-Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
+The UI stores API keys locally (optional) and exposes provider docs, notes, and rate-limit reminders so you can stay within free-tier budgets.
 
-_For more examples, please refer to the [Documentation](https://example.com)_
+## Features in Detail
+- **Ticker + timeframe orchestration** – Paste any ticker universe or use the curated list of indices, ETFs, equities, volatility instruments, crypto proxies, and macro benchmarks described in the research brief.
+- **SMA outfit catalog** – Every outfit from 10/50/200 through Waring’s Problem integers is selectable, with support for simultaneous evaluation across dozens of configurations.
+- **Active program notifications** – Starting a scan fires a toast, adds the program to the dashboard, and begins streaming progress updates. Cancelling a program halts all remaining fetches.
+- **Insight cards** – Results highlight last price, sample timestamp, SMA alignment, crossover classification, and a detailed stack preview.
+- **Browser-only execution** – There is no backend. All requests are made directly from your browser to the provider you pick, keeping secrets out of source control.
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+## Notes on “Scan Everything”
+The UI encourages “scan all stocks, all timeframes, all SMA outfits,” but public APIs enforce rate limits. The app enforces a practical guardrail (`200` ticker×timeframe combinations per program) to protect providers and keep the experience responsive. You can still run multiple programs sequentially if you need exhaustive coverage.
 
+## Legal & Transparency Considerations
+- Data sources remain subject to their respective licenses and terms. Always review the provider’s policy before redistributing data.
+- The repository documents institutional behaviors for educational and research purposes and does not constitute investment advice.
+- API keys stored via the “Remember locally” option never leave your browser’s localStorage.
 
-
-<!-- ROADMAP -->
-## Roadmap
-
-- [x] Add Changelog
-- [x] Add back to top links
-- [ ] Add Additional Templates w/ Examples
-- [ ] Add "components" document to easily copy & paste sections of the readme
-- [ ] Multi-language Support
-    - [ ] Chinese
-    - [ ] Spanish
-
-See the [open issues](https://github.com/othneildrew/Best-README-Template/issues) for a full list of proposed features (and known issues).
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
-
-<!-- CONTRIBUTING -->
-## Contributing
-
-Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
-
-If you have a suggestion that would make this better, please fork the repo and create a pull request. You can also simply open an issue with the tag "enhancement".
-Don't forget to give the project a star! Thanks again!
-
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-### Top contributors:
-
-<a href="https://github.com/othneildrew/Best-README-Template/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=othneildrew/Best-README-Template" alt="contrib.rocks image" />
-</a>
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
-
-<!-- LICENSE -->
-## License
-
-Distributed under the Unlicense License. See `LICENSE.txt` for more information.
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
-
-<!-- CONTACT -->
-## Contact
-
-Your Name - [@your_twitter](https://twitter.com/your_username) - email@example.com
-
-Project Link: [https://github.com/your_username/repo_name](https://github.com/your_username/repo_name)
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
-
-<!-- ACKNOWLEDGMENTS -->
-## Acknowledgments
-
-Use this space to list resources you find helpful and would like to give credit to. I've included a few of my favorites to kick things off!
-
-* [Choose an Open Source License](https://choosealicense.com)
-* [GitHub Emoji Cheat Sheet](https://www.webpagefx.com/tools/emoji-cheat-sheet)
-* [Malven's Flexbox Cheatsheet](https://flexbox.malven.co/)
-* [Malven's Grid Cheatsheet](https://grid.malven.co/)
-* [Img Shields](https://shields.io)
-* [GitHub Pages](https://pages.github.com)
-* [Font Awesome](https://fontawesome.com)
-* [React Icons](https://react-icons.github.io/react-icons/search)
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
-
-<!-- MARKDOWN LINKS & IMAGES -->
-<!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
-[contributors-shield]: https://img.shields.io/github/contributors/othneildrew/Best-README-Template.svg?style=for-the-badge
-[contributors-url]: https://github.com/othneildrew/Best-README-Template/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/othneildrew/Best-README-Template.svg?style=for-the-badge
-[forks-url]: https://github.com/othneildrew/Best-README-Template/network/members
-[stars-shield]: https://img.shields.io/github/stars/othneildrew/Best-README-Template.svg?style=for-the-badge
-[stars-url]: https://github.com/othneildrew/Best-README-Template/stargazers
-[issues-shield]: https://img.shields.io/github/issues/othneildrew/Best-README-Template.svg?style=for-the-badge
-[issues-url]: https://github.com/othneildrew/Best-README-Template/issues
-[license-shield]: https://img.shields.io/github/license/othneildrew/Best-README-Template.svg?style=for-the-badge
-[license-url]: https://github.com/othneildrew/Best-README-Template/blob/master/LICENSE.txt
-[linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
-[linkedin-url]: https://linkedin.com/in/othneildrew
-[product-screenshot]: images/screenshot.png
-[Next.js]: https://img.shields.io/badge/next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white
-[Next-url]: https://nextjs.org/
-[React.js]: https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB
-[React-url]: https://reactjs.org/
-[Vue.js]: https://img.shields.io/badge/Vue.js-35495E?style=for-the-badge&logo=vuedotjs&logoColor=4FC08D
-[Vue-url]: https://vuejs.org/
-[Angular.io]: https://img.shields.io/badge/Angular-DD0031?style=for-the-badge&logo=angular&logoColor=white
-[Angular-url]: https://angular.io/
-[Svelte.dev]: https://img.shields.io/badge/Svelte-4A4A55?style=for-the-badge&logo=svelte&logoColor=FF3E00
-[Svelte-url]: https://svelte.dev/
-[Laravel.com]: https://img.shields.io/badge/Laravel-FF2D20?style=for-the-badge&logo=laravel&logoColor=white
-[Laravel-url]: https://laravel.com
-[Bootstrap.com]: https://img.shields.io/badge/Bootstrap-563D7C?style=for-the-badge&logo=bootstrap&logoColor=white
-[Bootstrap-url]: https://getbootstrap.com
-[JQuery.com]: https://img.shields.io/badge/jQuery-0769AD?style=for-the-badge&logo=jquery&logoColor=white
-[JQuery-url]: https://jquery.com 
+---
+Questions or enhancements? Open an issue or submit a pull request—the more transparency around SMA outfits, the better. EOF
