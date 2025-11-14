@@ -132,34 +132,56 @@ const fetchFromFMP = async ({ symbol, timeframeId, apiKey }) => {
   };
 };
 
-const yahooMap = {
-  '1d': { interval: '1d', range: '1mo' },
-  '1w': { interval: '1wk', range: '3mo' },
-  '1M': { interval: '1mo', range: '1y' }
+const twelveIntervalMap = {
+  tick: '1sec',
+  '1s': '1sec',
+  '5s': '5sec',
+  '15s': '15sec',
+  '30s': '30sec',
+  '1m': '1min',
+  '2m': '2min',
+  '3m': '3min',
+  '5m': '5min',
+  '10m': '10min',
+  '15m': '15min',
+  '20m': '20min',
+  '30m': '30min',
+  '1h': '1h',
+  '2h': '2h',
+  '4h': '4h',
+  '1d': '1day',
+  '1w': '1week',
+  '1M': '1month'
 };
 
-const fetchFromYahoo = async ({ symbol, timeframeId }) => {
-  const mapping = yahooMap[timeframeId] || yahooMap['1d'];
-  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=${mapping.interval}&range=${mapping.range}`;
+const fetchFromTwelveData = async ({ symbol, timeframeId, apiKey }) => {
+  const key = apiKey || 'demo';
+  const interval = twelveIntervalMap[timeframeId] || '1day';
+  const params = new URLSearchParams({
+    symbol,
+    interval,
+    outputsize: '900',
+    apikey: key,
+    source: 'docs'
+  });
+  const url = `https://api.twelvedata.com/time_series?${params.toString()}`;
   const data = await fetchJSON(url);
-  const result = data.chart?.result?.[0];
-  if (!result) throw new Error('Yahoo Finance returned no data');
-  const timestamps = result.timestamp || [];
-  const quotes = result.indicators?.quote?.[0] || {};
-  const candles = timestamps.map((epoch, idx) => ({
-    timestamp: epoch * 1000,
-    open: Number(quotes.open?.[idx] ?? quotes.close?.[idx]),
-    high: Number(quotes.high?.[idx] ?? quotes.close?.[idx]),
-    low: Number(quotes.low?.[idx] ?? quotes.close?.[idx]),
-    close: Number(quotes.close?.[idx]),
-    volume: Number(quotes.volume?.[idx] ?? 0)
+  if (data.status === 'error') throw new Error(data.message || 'Twelve Data error');
+  const candles = (data.values || []).map((row) => ({
+    timestamp: new Date(row.datetime).getTime(),
+    open: Number(row.open),
+    high: Number(row.high),
+    low: Number(row.low),
+    close: Number(row.close),
+    volume: Number(row.volume ?? 0)
   }));
+  if (!candles.length) throw new Error('Twelve Data returned no candles');
   return {
-    providerId: 'yahooFinance',
+    providerId: 'twelveData',
     symbol,
     timeframe: timeframeId,
     derivedFrom: timeframeId,
-    sourceIntervalSeconds: timeframeDurationSeconds(timeframeId) || 86400,
+    sourceIntervalSeconds: timeframeDurationSeconds(timeframeId) || 60,
     candles: sortByTimestamp(candles)
   };
 };
@@ -266,7 +288,7 @@ const generateSyntheticSeries = ({ symbol, timeframeId }) => {
 const HANDLERS = {
   alphaVantage: requestAlphaSeries,
   financialModelingPrep: fetchFromFMP,
-  yahooFinance: fetchFromYahoo,
+  twelveData: fetchFromTwelveData,
   polygon: fetchFromPolygon,
   finnhub: fetchFromFinnhub
 };

@@ -29,68 +29,20 @@ export const TIMEFRAMES = [
   { id: '5s', label: '5 Seconds', durationSeconds: 5, category: 'Ultra Short', synthetic: true, baseInterval: '1m' },
   { id: '15s', label: '15 Seconds', durationSeconds: 15, category: 'Ultra Short', synthetic: true, baseInterval: '1m' },
   { id: '30s', label: '30 Seconds', durationSeconds: 30, category: 'Ultra Short', synthetic: true, baseInterval: '1m' },
-  { id: '1m', label: '1 Minute', durationSeconds: 60, category: 'Intraday', providerHints: { alphaVantage: { functionName: 'TIME_SERIES_INTRADAY', interval: '1min' } } },
+  { id: '1m', label: '1 Minute', durationSeconds: 60, category: 'Intraday' },
   { id: '2m', label: '2 Minutes', durationSeconds: 120, category: 'Intraday', synthetic: true, baseInterval: '1m' },
   { id: '3m', label: '3 Minutes', durationSeconds: 180, category: 'Intraday', synthetic: true, baseInterval: '1m' },
-  {
-    id: '5m',
-    label: '5 Minutes',
-    durationSeconds: 300,
-    category: 'Intraday',
-    synthetic: true,
-    baseInterval: '1m',
-    providerHints: { alphaVantage: { functionName: 'TIME_SERIES_INTRADAY', interval: '5min' }, fmp: { endpoint: 'historical-chart', interval: '5min' } }
-  },
+  { id: '5m', label: '5 Minutes', durationSeconds: 300, category: 'Intraday' },
   { id: '10m', label: '10 Minutes', durationSeconds: 600, category: 'Intraday', synthetic: true, baseInterval: '5m' },
-  {
-    id: '15m',
-    label: '15 Minutes',
-    durationSeconds: 900,
-    category: 'Intraday',
-    synthetic: true,
-    baseInterval: '1m',
-    providerHints: { alphaVantage: { functionName: 'TIME_SERIES_INTRADAY', interval: '15min' }, fmp: { endpoint: 'historical-chart', interval: '15min' } }
-  },
+  { id: '15m', label: '15 Minutes', durationSeconds: 900, category: 'Intraday' },
   { id: '20m', label: '20 Minutes', durationSeconds: 1200, category: 'Intraday', synthetic: true, baseInterval: '5m' },
-  {
-    id: '30m',
-    label: '30 Minutes',
-    durationSeconds: 1800,
-    category: 'Intraday',
-    synthetic: true,
-    baseInterval: '1m',
-    providerHints: { alphaVantage: { functionName: 'TIME_SERIES_INTRADAY', interval: '30min' } }
-  },
-  {
-    id: '1h',
-    label: '1 Hour',
-    durationSeconds: 3600,
-    category: 'Intraday',
-    synthetic: true,
-    baseInterval: '1m',
-    providerHints: { alphaVantage: { functionName: 'TIME_SERIES_INTRADAY', interval: '60min' }, fmp: { endpoint: 'historical-chart', interval: '1hour' } }
-  },
+  { id: '30m', label: '30 Minutes', durationSeconds: 1800, category: 'Intraday' },
+  { id: '1h', label: '1 Hour', durationSeconds: 3600, category: 'Intraday' },
   { id: '2h', label: '2 Hours', durationSeconds: 7200, category: 'Intraday', synthetic: true, baseInterval: '1h' },
   { id: '4h', label: '4 Hours', durationSeconds: 14400, category: 'Intraday', synthetic: true, baseInterval: '1h' },
-  { id: '1d', label: '1 Day', durationSeconds: 86400, category: 'Swing', providerHints: { alphaVantage: { functionName: 'TIME_SERIES_DAILY_ADJUSTED' }, fmp: { endpoint: 'historical-price-full', interval: '1day' }, yahoo: { range: '1mo', interval: '1d' } } },
-  {
-    id: '1w',
-    label: '1 Week',
-    durationSeconds: 604800,
-    category: 'Swing',
-    synthetic: true,
-    baseInterval: '1d',
-    providerHints: { alphaVantage: { functionName: 'TIME_SERIES_WEEKLY_ADJUSTED' }, yahoo: { range: '3mo', interval: '1wk' } }
-  },
-  {
-    id: '1M',
-    label: '1 Month',
-    durationSeconds: 2628000,
-    category: 'Macro',
-    synthetic: true,
-    baseInterval: '1d',
-    providerHints: { alphaVantage: { functionName: 'TIME_SERIES_MONTHLY_ADJUSTED' }, yahoo: { range: '1y', interval: '1mo' } }
-  },
+  { id: '1d', label: '1 Day', durationSeconds: 86400, category: 'Swing' },
+  { id: '1w', label: '1 Week', durationSeconds: 604800, category: 'Swing', synthetic: true, baseInterval: '1d' },
+  { id: '1M', label: '1 Month', durationSeconds: 2628000, category: 'Macro', synthetic: true, baseInterval: '1d' },
   { id: '1Q', label: '1 Quarter', durationSeconds: 7884000, category: 'Macro', synthetic: true, baseInterval: '1M' }
 ];
 
@@ -120,12 +72,13 @@ export const PROVIDER_METADATA = [
     requiresKey: false
   },
   {
-    id: 'yahooFinance',
-    name: 'Yahoo Finance (public)',
-    type: 'public',
-    url: 'https://query1.finance.yahoo.com',
-    notes: 'No key required, range-limited. Subject to Yahoo CORS policies.',
-    supports: ['swing', 'macro'],
+    id: 'twelveData',
+    name: 'Twelve Data',
+    type: 'free-key',
+    url: 'https://twelvedata.com',
+    defaultKey: 'demo',
+    notes: 'High-quality equities/FX/crypto data with generous demo throughput.',
+    supports: ['intraday', 'swing', 'macro'],
     requiresKey: false
   },
   {

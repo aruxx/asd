@@ -6,7 +6,7 @@ A GitHub Pages–ready microsite that documents institutional Simple Moving Aver
 
 ## Highlights
 
-- **Five provider options** – Alpha Vantage, Financial Modeling Prep, Yahoo Finance, Polygon.io, and Finnhub are baked in. Demo keys are prefilled where allowed; paid tiers can be added manually.
+- **Five provider options** – Alpha Vantage, Financial Modeling Prep, Twelve Data, Polygon.io, and Finnhub are baked in. Demo keys are prefilled where allowed; paid tiers can be added manually.
 - **Universal SMA library** – Every outfit listed in the research brief (e.g., 10/50/200, Waring integers, harmonic civic stacks) is bundled and selectable.
 - **Full timeframe coverage** – Tick, sub-second, multi-minute, intra-day, swing, and macro periods are synthesized from real data so you can observe how outfits align across the entire market lattice.
 - **Active program monitor** – Each scan queues as a "program" with start/completion notifications, live logs, and aggregate signal summaries.
@@ -48,8 +48,7 @@ Because all logic is client-side, once the files are served you can immediately 
 ## Using the web app
 
 1. **Pick a provider** from the dropdown.
-   - Alpha Vantage + Financial Modeling Prep ship with demo keys (`demo`).
-   - Yahoo Finance is keyless.
+   - Alpha Vantage, Financial Modeling Prep, and Twelve Data ship with demo keys (`demo`).
    - Polygon.io & Finnhub require you to paste your own token (free community tiers exist).
 2. **Load tickers** – paste a comma/space separated list or click *“Load institutional universe”* to prefill ~12 flagship tickers.
 3. **Select timeframes** – core institutional stack (1m → 1M) is preselected. Use *Select all* to include ultra-short and experimental frames.
@@ -69,7 +68,7 @@ Because all logic is client-side, once the files are served you can immediately 
 | --- | --- | --- | --- |
 | Alpha Vantage | Yes (5 req/min) | `demo` | Intraday + daily functions, ideal for public demos.
 | Financial Modeling Prep | Yes | `demo` | Historical chart endpoints with generous quotas.
-| Yahoo Finance | Public | – | Uses the undocumented chart API; no key required.
+| Twelve Data | Yes | `demo` | Equities/FX/crypto intervals down to seconds; generous demo bandwidth.
 | Polygon.io | Free community | — (user supplied) | Paste your key for higher throughput intraday data.
 | Finnhub | Free tier | — (user supplied) | Great for equities + crypto with 60 req/min allowing.
 
